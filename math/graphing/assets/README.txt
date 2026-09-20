@@ -1,0 +1,1 @@
+Graphing app image assets.
