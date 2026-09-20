@@ -1,11 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Mr. O'Connor's Classroom</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mr. Scott's Class</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f6f8fc; color: #172033; }
+    header { text-align: center; padding: 44px 20px 30px; background: white; border-bottom: 1px solid #e4e8f0; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4rem); }
+    header p { margin: 10px 0 0; font-size: clamp(1.05rem, 2.5vw, 1.35rem); color: #526078; }
+    main { width: min(1100px, 92%); margin: 38px auto 60px; }
+    .intro { text-align: center; font-size: 1.2rem; margin-bottom: 28px; font-weight: 700; }
+    .subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .card { min-height: 180px; border-radius: 20px; padding: 24px; background: white; border: 2px solid #e3e8f1; box-shadow: 0 5px 14px rgba(20,35,60,.07); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    .card:hover, .card:focus-visible { transform: translateY(-4px); box-shadow: 0 9px 20px rgba(20,35,60,.12); border-color: #8798b7; outline: none; }
+    .icon { font-size: 3.25rem; line-height: 1; margin-bottom: 16px; }
+    .card h2 { margin: 0; font-size: 1.45rem; }
+    .card p { margin: 8px 0 0; color: #647086; font-size: .98rem; }
+    footer { text-align: center; padding: 24px; color: #69758a; }
+    @media (max-width: 560px) { header { padding-top: 32px; } main { margin-top: 28px; } .card { min-height: 150px; } }
+  </style>
 </head>
-
 <body>
-    <h1>Mr. O'Connor's Classroom</h1>
-    <p>Welcome to our classroom website!</p>
+  <header>
+    <h1>Mr. Scott's Class</h1>
+    <p>Interactive Learning Activities</p>
+  </header>
+  <main>
+    <div class="intro">Choose a subject to get started.</div>
+    <div class="subjects">
+      <a class="card" href="#" aria-label="Math activities"><div class="icon">➗</div><h2>Math</h2><p>Numbers, data, graphs &amp; more</p></a>
+      <a class="card" href="#" aria-label="English activities"><div class="icon">📖</div><h2>English</h2><p>Reading, vocabulary &amp; language</p></a>
+      <a class="card" href="#" aria-label="French activities"><div class="icon">💬</div><h2>French</h2><p>French language activities</p></a>
+      <a class="card" href="#" aria-label="Science activities"><div class="icon">🔬</div><h2>Science</h2><p>Explore and discover</p></a>
+      <a class="card" href="#" aria-label="Culture Citizenship and History activities"><div class="icon">🏛️</div><h2>Culture &amp; Citizenship / History</h2><p>People, communities &amp; the past</p></a>
+      <a class="card" href="#" aria-label="World of Work activities"><div class="icon">🧰</div><h2>World of Work</h2><p>Jobs, retail &amp; workplace skills</p></a>
+      <a class="card" href="#" aria-label="Games and Activities"><div class="icon">🎲</div><h2>Games &amp; Activities</h2><p>Practice, play &amp; learn</p></a>
+    </div>
+  </main>
+  <footer>Mr. Scott's Class</footer>
 </body>
 </html>
