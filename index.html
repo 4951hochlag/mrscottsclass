@@ -1,11 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Mr. O'Connor's Classroom</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mr. Scott's Class</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f6f8fc; color: #172033; }
+    header { text-align: center; padding: 44px 20px 30px; background: white; border-bottom: 1px solid #e4e8f0; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 4rem); }
+    header p { margin: 10px 0 0; font-size: clamp(1.05rem, 2.5vw, 1.35rem); color: #526078; }
+    main { width: min(1100px, 92%); margin: 38px auto 60px; }
+    .intro { text-align: center; font-size: 1.2rem; margin-bottom: 28px; font-weight: 700; }
+    .subjects { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .card { min-height: 260px; border-radius: 20px; padding: 14px; background: white; border: 2px solid #e3e8f1; box-shadow: 0 5px 14px rgba(20,35,60,.07); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; overflow: hidden; }
+    .card:hover, .card:focus-visible { transform: translateY(-4px); box-shadow: 0 9px 20px rgba(20,35,60,.12); border-color: #8798b7; outline: none; }
+    .card img { display: block; width: 100%; height: 230px; object-fit: contain; }
+    footer { text-align: center; padding: 24px; color: #69758a; }
+    @media (max-width: 560px) { header { padding-top: 32px; } main { margin-top: 28px; } .card { min-height: 220px; } .card img { height: 200px; } }
+  </style>
 </head>
-
 <body>
-    <h1>Mr. O'Connor's Classroom</h1>
-    <p>Welcome to our classroom website!</p>
+  <header>
+    <h1>Mr. Scott's Class</h1>
+    <p>Interactive Learning Activities</p>
+  </header>
+  <main>
+    <div class="intro">Choose a subject to get started.</div>
+    <div class="subjects">
+      <a class="card" href="#" aria-label="Math activities"><img src="Subject Icon.png" alt="Math"></a>
+      <a class="card" href="#" aria-label="English activities"><img src="English Subject Icon.png" alt="English"></a>
+      <a class="card" href="#" aria-label="French activities"><img src="French subject icon.png" alt="French"></a>
+      <a class="card" href="#" aria-label="Science activities"><img src="Science subject icon.png" alt="Science"></a>
+      <a class="card" href="#" aria-label="Culture and Citizenship in Quebec and History activities"><img src="Culture and Citizenship Icon.png" alt="Culture and Citizenship in Quebec and History"></a>
+      <a class="card" href="#" aria-label="World of Work activities"><img src="world of work icon.png" alt="World of Work"></a>
+      <a class="card" href="#" aria-label="Games and Activities"><img src="games and activities icon.png" alt="Games and Activities"></a>
+      <a class="card" href="#" aria-label="Social Skills activities"><img src="social skills icon.png" alt="Social Skills"></a>
+    </div>
+  </main>
+  <footer>Mr. Scott's Class</footer>
 </body>
 </html>
