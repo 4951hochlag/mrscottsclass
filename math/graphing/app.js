@@ -15,20 +15,42 @@ function questions(){if(!S.questions.length)S.questions=makeQuestions();let all=
 function finish(){let top=extreme('max'),matched=S.prediction&&top.includes(S.prediction),pred=S.c.predictionOn?'<div class="result"><strong>Your prediction:</strong> '+esc(S.prediction)+'<br>'+(matched?'It matched a most-popular answer!':'The most popular '+(top.length>1?'answers were ':'answer was ')+esc(top.join(' and '))+'. Predictions help us think before collecting data.')+'</div>':'';$('#work').innerHTML='<div class="finish"><div style="font-size:4rem">✓</div><h2>Activity complete!</h2><p>You collected data, made a graph, and '+(S.c.questionsOn?'answered questions about it.':'showed the results.')+'</p>'+pred+'<div class="summary"><div><strong>Survey</strong>'+esc(S.c.topic)+'</div><div><strong>Students</strong>'+S.students.length+'</div><div><strong>Scale</strong>1 block = 1 student</div></div><div class="field"><label>Student name for PDF</label><input id="studentName" value="'+esc(S.studentName)+'" placeholder="Enter your name"></div><div class="center"><button class="btn" id="backLast">← Back</button><button class="btn primary" id="pdf">Save My Work as PDF</button><button class="btn danger" id="newSurvey">Start a New Survey</button></div></div>';$('#studentName').oninput=e=>{S.studentName=e.target.value;save()};$('#backLast').onclick=()=>{S.stage=S.c.questionsOn?'questions':'graph';render()};$('#pdf').onclick=downloadPDF;$('#newSurvey').onclick=newSurvey}
 function newSurvey(){if(!confirm('Start a completely new survey? This will delete the current student work.'))return;S=null;sessionStorage.removeItem('surveyActivity');$('#activity').classList.remove('active');$('#setup').classList.remove('hiddenPage');$('#setup').classList.add('active');$('#newTop').classList.add('hidden');document.body.classList.remove('presentation');document.exitFullscreen?.().catch(()=>{})}$('#newTop').onclick=newSurvey;$('#create').onclick=()=>{if(S&&!confirm('Create a new class and replace the current work?'))return;create()};
 function pe(s){return String(s??'').replace(/[^\x20-\x7E]/g,'').replace(/([\\()])/g,'\\$1')}
+function makeGraphPrintClone(){
+  // Render the same graph component the student used, then clone that exact DOM for the PDF.
+  graph();
+  const source=document.querySelector('#work .scroll');
+  if(!source)return null;
+  const clone=source.cloneNode(true);
+  clone.classList.add('pdfGraphSnapshot');
+  clone.querySelectorAll('input').forEach(input=>{
+    const span=document.createElement('span');
+    span.className='pdfInputText';
+    span.textContent=input.value;
+    input.replaceWith(span);
+  });
+  clone.querySelectorAll('button.cell').forEach(cell=>{
+    const block=document.createElement('div');
+    block.className=cell.className;
+    block.setAttribute('style',cell.getAttribute('style')||'');
+    cell.replaceWith(block);
+  });
+  finish();
+  return clone;
+}
 function downloadPDF(){
-  // Use the browser's print-to-PDF engine so the student's completed graph is preserved visually.
   const old=document.getElementById('studentPdfSheet');if(old)old.remove();
+  const graphClone=S.c.pdf.graph?makeGraphPrintClone():null;
   const sheet=document.createElement('div');sheet.id='studentPdfSheet';
-  const top=Math.max(...S.c.answers.map(a=>S.actual[a]));
-  const most=S.c.answers.filter(a=>S.actual[a]===top);
-  const graphMax=Math.max(5,...S.c.answers.map(a=>S.graph[a]||0));
-  const bars=S.c.answers.map(a=>'<div class="pdfBarCol"><div class="pdfBar" style="height:'+((S.graph[a]||0)/graphMax*260)+'px"></div><div class="pdfBarValue">'+(S.graph[a]||0)+'</div><div class="pdfBarLabel">'+esc(a)+'</div></div>').join('');
   let html='<h1>'+esc(S.title||S.c.topic)+'</h1><div class="pdfMeta"><strong>Student:</strong> '+esc(S.studentName||'____________________')+' &nbsp;&nbsp; <strong>Date:</strong> '+new Date().toLocaleDateString()+'</div><h2>Survey: '+esc(S.c.topic)+'</h2>';
   if(S.c.pdf.prediction&&S.c.predictionOn)html+='<p><strong>Prediction:</strong> '+esc(S.prediction||'')+'</p>';
   if(S.c.pdf.tally)html+='<h2>Data results</h2><div class="pdfResults">'+S.c.answers.map(a=>'<div><strong>'+esc(a)+':</strong> '+S.actual[a]+' student'+(S.actual[a]===1?'':'s')+'</div>').join('')+'</div>';
-  if(S.c.pdf.graph)html+='<h2>Completed bar graph</h2><div class="pdfGraphTitle">'+esc(S.title||S.c.topic)+'</div><div class="pdfGraphWrap"><div class="pdfYLabel">'+esc(S.y||'Number of Students')+'</div><div class="pdfPlot"><div class="pdfYAxis">'+Array.from({length:graphMax+1},(_,i)=>'<span style="bottom:'+(i/graphMax*260)+'px">'+i+'</span>').join('')+'</div><div class="pdfBars">'+bars+'</div></div></div><div class="pdfXLabel">'+esc(S.x||S.c.topic)+'</div>';
-  if(S.c.pdf.questions&&S.c.questionsOn){html+='<h2>Graph questions</h2>';S.questions.forEach((q,i)=>{let a=S.responses[i];html+='<div class="pdfQ"><strong>'+(i+1)+'. '+esc(q.text)+'</strong><br>Answer: '+esc(Array.isArray(a)?a.join(', '):(a??''))+'</div>'})}
+  if(graphClone)html+='<h2>Completed bar graph</h2><div id="pdfGraphMount"></div>';
+  if(S.c.pdf.questions&&S.c.questionsOn){html+='<h2>Graph questions</h2>';S.questions.forEach((q,i)=>{let ans=S.responses[i];html+='<div class="pdfQ"><strong>'+(i+1)+'. '+esc(q.text)+'</strong><br>Answer: '+esc(Array.isArray(ans)?ans.join(', '):(ans??''))+'</div>'})}
   if(S.c.pdf.feedback){html+='<h2>Results</h2><p><strong>Graph:</strong> '+(S.graphCorrect?'Correct':'Not yet correct')+'</p>';if(S.c.questionsOn)html+='<p><strong>Questions correct:</strong> '+S.questions.filter((q,i)=>right(q,S.responses[i])).length+' of '+S.questions.length+'</p>'}
-  sheet.innerHTML=html;document.body.appendChild(sheet);window.print();setTimeout(()=>sheet.remove(),1200)
+  sheet.innerHTML=html;
+  document.body.appendChild(sheet);
+  if(graphClone)document.getElementById('pdfGraphMount').appendChild(graphClone);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+  setTimeout(()=>sheet.remove(),1500)
 }
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('presentation')});document.addEventListener('keydown',e=>{if(S?.stage==='collect'&&(e.code==='Space'||e.key==='ArrowRight')&&!['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement.tagName)&&S.revealed<S.students.length){e.preventDefault();S.revealed++;collect();save()}});try{let x=sessionStorage.getItem('surveyActivity');if(x){S=JSON.parse(x);show()}}catch(e){sessionStorage.removeItem('surveyActivity')}
