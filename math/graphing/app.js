@@ -15,42 +15,33 @@ function questions(){if(!S.questions.length)S.questions=makeQuestions();let all=
 function finish(){let top=extreme('max'),matched=S.prediction&&top.includes(S.prediction),pred=S.c.predictionOn?'<div class="result"><strong>Your prediction:</strong> '+esc(S.prediction)+'<br>'+(matched?'It matched a most-popular answer!':'The most popular '+(top.length>1?'answers were ':'answer was ')+esc(top.join(' and '))+'. Predictions help us think before collecting data.')+'</div>':'';$('#work').innerHTML='<div class="finish"><div style="font-size:4rem">✓</div><h2>Activity complete!</h2><p>You collected data, made a graph, and '+(S.c.questionsOn?'answered questions about it.':'showed the results.')+'</p>'+pred+'<div class="summary"><div><strong>Survey</strong>'+esc(S.c.topic)+'</div><div><strong>Students</strong>'+S.students.length+'</div><div><strong>Scale</strong>1 block = 1 student</div></div><div class="field"><label>Student name for PDF</label><input id="studentName" value="'+esc(S.studentName)+'" placeholder="Enter your name"></div><div class="center"><button class="btn" id="backLast">← Back</button><button class="btn primary" id="pdf">Save My Work as PDF</button><button class="btn danger" id="newSurvey">Start a New Survey</button></div></div>';$('#studentName').oninput=e=>{S.studentName=e.target.value;save()};$('#backLast').onclick=()=>{S.stage=S.c.questionsOn?'questions':'graph';render()};$('#pdf').onclick=downloadPDF;$('#newSurvey').onclick=newSurvey}
 function newSurvey(){if(!confirm('Start a completely new survey? This will delete the current student work.'))return;S=null;sessionStorage.removeItem('surveyActivity');$('#activity').classList.remove('active');$('#setup').classList.remove('hiddenPage');$('#setup').classList.add('active');$('#newTop').classList.add('hidden');document.body.classList.remove('presentation');document.exitFullscreen?.().catch(()=>{})}$('#newTop').onclick=newSurvey;$('#create').onclick=()=>{if(S&&!confirm('Create a new class and replace the current work?'))return;create()};
 function pe(s){return String(s??'').replace(/[^\x20-\x7E]/g,'').replace(/([\\()])/g,'\\$1')}
-function makeGraphPrintClone(){
-  // Render the same graph component the student used, then clone that exact DOM for the PDF.
-  graph();
-  const source=document.querySelector('#work .scroll');
-  if(!source)return null;
-  const clone=source.cloneNode(true);
-  clone.classList.add('pdfGraphSnapshot');
-  clone.querySelectorAll('input').forEach(input=>{
-    const span=document.createElement('span');
-    span.className='pdfInputText';
-    span.textContent=input.value;
-    input.replaceWith(span);
-  });
-  clone.querySelectorAll('button.cell').forEach(cell=>{
-    const block=document.createElement('div');
-    block.className=cell.className;
-    block.setAttribute('style',cell.getAttribute('style')||'');
-    cell.replaceWith(block);
-  });
-  finish();
-  return clone;
+function makeGraphImage(){
+  // Capture the graph as SVG so the PDF gets a literal image of the completed on-screen graph.
+  const answers=S.c.answers,max=Math.max(5,...Object.values(S.actual)),n=answers.length;
+  const W=900,H=560,left=95,right=25,top=65,bottom=115,pw=W-left-right,ph=H-top-bottom;
+  const slot=pw/n,barW=Math.max(28,slot*.58);
+  const e=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  let svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><rect width="100%" height="100%" fill="white"/>';
+  svg+='<text x="'+(left+pw/2)+'" y="30" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700">'+e(S.title||S.c.topic)+'</text>';
+  for(let v=0;v<=max;v++){let y=top+ph-(v/max*ph);svg+='<line x1="'+left+'" y1="'+y+'" x2="'+(left+pw)+'" y2="'+y+'" stroke="'+(v===0?'#172033':'#d7e0ea')+'" stroke-width="'+(v===0?3:1)+'"/><text x="'+(left-12)+'" y="'+(y+4)+'" text-anchor="end" font-family="Arial,sans-serif" font-size="13">'+v+'</text>'}
+  svg+='<line x1="'+left+'" y1="'+top+'" x2="'+left+'" y2="'+(top+ph)+'" stroke="#172033" stroke-width="3"/>';
+  answers.forEach((cat,i)=>{let val=S.graph[cat]||0,x=left+i*slot+(slot-barW)/2,h=val/max*ph,y=top+ph-h,fill=colors[cat]||'#2563eb';if(val>0)svg+='<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+h+'" fill="'+fill+'" stroke="#8da0b5" stroke-width="1"/>';svg+='<text x="'+(left+i*slot+slot/2)+'" y="'+(top+ph+24)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700">'+e(cat)+'</text>'});
+  svg+='<text x="'+(left+pw/2)+'" y="'+(H-28)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="700">'+e(S.x||S.c.topic)+'</text>';
+  svg+='<text x="22" y="'+(top+ph/2)+'" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="700" transform="rotate(-90 22 '+(top+ph/2)+')">'+e(S.y||'Number of Students')+'</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)
 }
 function downloadPDF(){
   const old=document.getElementById('studentPdfSheet');if(old)old.remove();
-  const graphClone=S.c.pdf.graph?makeGraphPrintClone():null;
+  const graphImage=S.c.pdf.graph?makeGraphImage():null;
   const sheet=document.createElement('div');sheet.id='studentPdfSheet';
   let html='<h1>'+esc(S.title||S.c.topic)+'</h1><div class="pdfMeta"><strong>Student:</strong> '+esc(S.studentName||'____________________')+' &nbsp;&nbsp; <strong>Date:</strong> '+new Date().toLocaleDateString()+'</div><h2>Survey: '+esc(S.c.topic)+'</h2>';
   if(S.c.pdf.prediction&&S.c.predictionOn)html+='<p><strong>Prediction:</strong> '+esc(S.prediction||'')+'</p>';
   if(S.c.pdf.tally)html+='<h2>Data results</h2><div class="pdfResults">'+S.c.answers.map(a=>'<div><strong>'+esc(a)+':</strong> '+S.actual[a]+' student'+(S.actual[a]===1?'':'s')+'</div>').join('')+'</div>';
-  if(graphClone)html+='<h2>Completed bar graph</h2><div id="pdfGraphMount"></div>';
+  if(graphImage)html+='<h2>Completed bar graph</h2><img id="pdfGraphImage" class="pdfGraphImage" alt="Completed bar graph">';
   if(S.c.pdf.questions&&S.c.questionsOn){html+='<h2>Graph questions</h2>';S.questions.forEach((q,i)=>{let ans=S.responses[i];html+='<div class="pdfQ"><strong>'+(i+1)+'. '+esc(q.text)+'</strong><br>Answer: '+esc(Array.isArray(ans)?ans.join(', '):(ans??''))+'</div>'})}
   if(S.c.pdf.feedback){html+='<h2>Results</h2><p><strong>Graph:</strong> '+(S.graphCorrect?'Correct':'Not yet correct')+'</p>';if(S.c.questionsOn)html+='<p><strong>Questions correct:</strong> '+S.questions.filter((q,i)=>right(q,S.responses[i])).length+' of '+S.questions.length+'</p>'}
-  sheet.innerHTML=html;
-  document.body.appendChild(sheet);
-  if(graphClone)document.getElementById('pdfGraphMount').appendChild(graphClone);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
-  setTimeout(()=>sheet.remove(),1500)
+  sheet.innerHTML=html;document.body.appendChild(sheet);
+  if(graphImage){const img=document.getElementById('pdfGraphImage');img.onload=()=>setTimeout(()=>window.print(),50);img.src=graphImage}else requestAnimationFrame(()=>window.print());
+  setTimeout(()=>sheet.remove(),2000)
 }
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('presentation')});document.addEventListener('keydown',e=>{if(S?.stage==='collect'&&(e.code==='Space'||e.key==='ArrowRight')&&!['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement.tagName)&&S.revealed<S.students.length){e.preventDefault();S.revealed++;collect();save()}});try{let x=sessionStorage.getItem('surveyActivity');if(x){S=JSON.parse(x);show()}}catch(e){sessionStorage.removeItem('surveyActivity')}
