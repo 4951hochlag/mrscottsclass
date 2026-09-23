@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Retail or Not Retail? | Mr. Scott's Class</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f8fc;color:#172033}main{width:min(820px,94%);margin:30px auto;text-align:center}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.back{color:#172033;text-decoration:none;font-weight:700}h1{font-size:clamp(2rem,6vw,3.5rem);margin:25px 0 8px}.rule{font-size:1.2rem;color:#526078}.card{background:#fff;border:2px solid #e3e8f1;border-radius:24px;padding:30px;margin:28px 0;box-shadow:0 5px 14px rgba(20,35,60,.08)}.emoji{font-size:6rem}.name{font-size:2rem;font-weight:800;margin:12px}.prompt{font-size:1.35rem}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:25px}button{border:0;border-radius:18px;padding:22px 10px;font-size:1.5rem;font-weight:800;cursor:pointer}.retail{background:#dff5e5}.not{background:#ffe3e3}.feedback{min-height:62px;margin-top:22px;padding:15px;border-radius:15px;font-size:1.35rem;font-weight:800}.correct{background:#dff5e5}.wrong{background:#ffe3e3}.next{background:#e5ecff;margin-top:12px;width:100%;display:none}.score{font-weight:700}@media(max-width:520px){.buttons{grid-template-columns:1fr}.emoji{font-size:5rem}}
+</style></head>
+<body><main>
+<div class="top"><a class="back" href="../">← World of Work</a><div class="score" id="score">Question 1 of 12</div></div>
+<h1>Retail or Not Retail?</h1>
+<div class="rule">Does this business or workplace sell goods or services directly to customers?</div>
+<div class="card"><div class="emoji" id="emoji"></div><div class="name" id="name"></div><div class="prompt">Is this retail?</div>
+<div class="buttons"><button class="retail" onclick="answer(true)">RETAIL 🛍️</button><button class="not" onclick="answer(false)">NOT RETAIL 🚫</button></div>
+<div class="feedback" id="feedback"></div><button class="next" id="next" onclick="next()">Next →</button></div>
+</main>
+<script>
+const items=[
+["Grocery Store","🛒",true],["Clothing Store","👕",true],["Hair Salon","💇",true],["Restaurant","🍽️",true],
+["Shoe Store","👟",true],["Auto Repair Shop","🔧",true],["School","🏫",false],["Factory","🏭",false],
+["Warehouse","📦",false],["Construction Site","🏗️",false],["Fire Station","🚒",false],["Office Building","🏢",false]
+];
+let order=[...items].sort(()=>Math.random()-.5),i=0,correct=0,locked=false;
+function show(){const x=order[i];emoji.textContent=x[1];name.textContent=x[0];score.textContent="Question "+(i+1)+" of "+order.length;feedback.textContent="";feedback.className="feedback";next.style.display="none";locked=false}
+function answer(choice){if(locked)return;const x=order[i];if(choice===x[2]){locked=true;correct++;feedback.textContent="Correct! ✓";feedback.className="feedback correct";next.style.display="block"}else{feedback.textContent="Try again.";feedback.className="feedback wrong"}}
+function next(){i++;if(i<order.length)show();else{document.querySelector(".card").innerHTML='<div class="emoji">⭐</div><div class="name">Great work!</div><div class="prompt">You got '+correct+' out of '+order.length+' correct.</div><button class="next" style="display:block" onclick="location.reload()">Try Again</button>';score.textContent="Finished!"}}
+show();
+</script></body></html>
