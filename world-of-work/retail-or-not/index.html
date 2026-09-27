@@ -12,14 +12,39 @@
 <div class="chart-title">Our T-Chart</div><div class="tchart"><div class="col"><h2>RETAIL</h2><div class="sorted" id="retailCol"></div></div><div class="col"><h2>NOT RETAIL</h2><div class="sorted" id="notCol"></div></div></div>
 </main><script>
 const items=[
-{name:"Pharmacy",img:"https://www.rawpixel.com/image/17298668/modern-pharmacy-storefront-exterior",fallback:"https://images.pexels.com/photos/17003640/pexels-photo-17003640.jpeg",retail:true},
-{name:"Shoe Store",img:"https://focsanimall.ro/pictures/original/office-shoes-focsani-2-1920-x-1080-px--65981686e80e3d5d48.png",retail:true},
-{name:"Grocery Store",img:"https://www.marketbeat.com/logos/articles/med_20260206123513_3-consumer-staples-stocks-breaking-out-this-month.png",retail:true},
-{name:"Restaurant",img:"https://storage.googleapis.com/gvdvyszjzuxralablog/interior-design-for-restaurant.html",retail:true},
-{name:"Park",img:"https://imagescdn.homes.com/i2/jAw9-wj1GH2RcsW_OuIxfvDfAkbXTWjdEDz1retrMlA/102/wyngate-park-great-neck-ny.jpg?p=1",retail:false},
-{name:"Playground",img:"https://www.miracle-recreation.com/markets/parks/",retail:false},
-{name:"School",img:"https://i.pinimg.com/736x/00/00/00/00000000000000000000000000000000.jpg",retail:false},
-{name:"Fire Station",img:"https://www.mortarr.com/photo/view/images/project_gallery_images/rice-fergus-miller-architecture-city-of-olympia-fire-station-4-modern-exterior-design/34310",retail:false}
+{name:"Bakery",img:"images/bakery.jpg",retail:true},
+{name:"Book Store",img:"images/book-store.jpg",retail:true},
+{name:"Clothing Store",img:"images/clothing-store.jpg",retail:true},
+{name:"Coffee Shop",img:"images/coffee-shop.jpg",retail:true},
+{name:"Dépanneur",img:"images/depanneur.jpg",retail:true},
+{name:"Dollar Store",img:"images/dollar-store.jpg",retail:true},
+{name:"Electronics Store",img:"images/electronics-store.jpg",retail:true},
+{name:"Flower Store",img:"images/flower-store.jpg",retail:true},
+{name:"Furniture Store",img:"images/furniture-store.jpg",retail:true},
+{name:"Grocery Store",img:"images/grocery-store.jpg",retail:true},
+{name:"Hair Salon",img:"images/hair-salon.jpg",retail:true},
+{name:"Hardware Store",img:"images/hardware-store.jpg",retail:true},
+{name:"Jewelry Store",img:"images/jewelry%20store.jpg",retail:true},
+{name:"Pet Store",img:"images/pet-store.jpg",retail:true},
+{name:"Pharmacy",img:"images/pharmacy.jpg",retail:true},
+{name:"Restaurant",img:"images/restaurant.jpg",retail:true},
+{name:"Shoe Store",img:"images/shoe-store.jpg",retail:true},
+{name:"Sporting Goods Store",img:"images/sporting-goods-store.jpg",retail:true},
+{name:"Toy Store",img:"images/toy-store.jpg",retail:true},
+{name:"City Hall",img:"images/city-hall.jpg",retail:false},
+{name:"Construction Site",img:"images/construction-site.jpg",retail:false},
+{name:"Factory",img:"images/factory.jpg",retail:false},
+{name:"Fire Station",img:"images/fire-station.jpg",retail:false},
+{name:"Hospital",img:"images/hospital.jpg",retail:false},
+{name:"Library",img:"images/library.jpg",retail:false},
+{name:"Office Building",img:"images/office-building.jpg",retail:false},
+{name:"Park",img:"images/park.jpg",retail:false},
+{name:"Playground",img:"images/playground.jpg",retail:false},
+{name:"Police Station",img:"images/police-station.jpg",retail:false},
+{name:"Power Plant",img:"images/power-plant.jpg",retail:false},
+{name:"Recycling Centre",img:"images/recycling-centre.jpg",retail:false},
+{name:"School",img:"images/school.jpg",retail:false},
+{name:"Warehouse",img:"images/warehouse.jpg",retail:false}
 ];
 let order=[...items].sort(()=>Math.random()-.5),i=0,correct=0,locked=false;
 function card(x){return '<div class="sorted-card"><img src="'+x.img+'" alt="'+x.name+'"><div>'+x.name+'</div></div>'}
