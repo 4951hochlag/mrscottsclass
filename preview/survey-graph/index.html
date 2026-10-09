@@ -27,13 +27,42 @@ $('#showData').onclick=showData;
 $('#dataPopup').addEventListener('click',event=>{if(event.target===$('#dataPopup')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)event.target.close()}});
 function printWork(keepForCapture=false){capture();let old=document.getElementById('printSheet');if(old)old.remove();let source=$('#graphArea').cloneNode(true);source.id='printGraphClone';let printMax=Math.max(5,...Object.values(state.counts));source.style.setProperty('--rh',(300/printMax)+'px');source.querySelectorAll('input').forEach(input=>{let span=document.createElement('span');span.className=input.id==='gt'?'print-input graph-title-value':input.id==='gy'?'print-input y-label-value':'print-input x-label-value';span.textContent=input.value;input.replaceWith(span)});source.querySelectorAll('button.cell').forEach(cell=>{let d=document.createElement('div');d.className=cell.className;cell.replaceWith(d)});let groups=state.groups.length?'<h2>Groups Surveyed</h2><table><tr><th>Group</th><th>Responses</th></tr>'+state.groups.map(g=>'<tr><td>'+esc(g.name)+'</td><td>'+g.total+'</td></tr>').join('')+'</table>':'',trows=state.options.map(o=>'<tr><td>'+esc(o)+'</td><td class="ptally">'+marks(state.counts[o])+'</td><td>'+state.counts[o]+'</td></tr>').join('');let sheet=document.createElement('section');sheet.id='printSheet';sheet.innerHTML='<h1>Survey &amp; Graph</h1><h2>'+esc(state.question)+'</h2><h3>Collected Data</h3><table><tr><th>Answer</th><th>Tally</th><th>Total</th></tr>'+trows+'</table>'+groups+'<div class="printGraphHolder"></div>';sheet.querySelector('.printGraphHolder').appendChild(source);document.body.appendChild(sheet);if(!keepForCapture){window.print();setTimeout(()=>sheet.remove(),1000)}}
 function resetSurvey(){if(!confirm('Start a new survey? Your current work will be cleared.'))return;localStorage.removeItem('surveyGraphApp');location.reload()}
-$('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').onclick=nextGroup;$('#toGraph').onclick=()=>{if(state.group||Object.values(state.counts).some((v,i)=>v!==(state.groupStart[state.options[i]]||0)))closeGroup();state.group='';state.groupStart={...state.counts};graph();show('graph',2)};$('#back').onclick=()=>{capture();renderTallies();show('collect',1)};$('#clear').onclick=()=>{state.bars=Object.fromEntries(state.options.map(o=>[o,0]));$('#feedback').textContent='';$('#finish').classList.add('hidden');graph()};$('#check').onclick=()=>{capture();if(!state.title.trim()||!state.x.trim()||!state.y.trim()){alert('Complete the graph title and both axis labels.');return}let ok=state.options.every(o=>state.bars[o]===state.counts[o]);$('#feedback').textContent=ok?'':'Almost there. Check your bar heights against your tally totals.';$('#finish').classList.toggle('hidden',!ok);if(ok)$('#successPop').classList.remove('hidden');save()};$('#successOK').onclick=()=>{$('#successPop').classList.add('hidden');$('#finish').focus()};$('#finish').onclick=()=>{$('#summary').innerHTML='<p><strong>'+esc(state.question)+'</strong></p>'+state.options.map(o=>'<div>'+esc(o)+': <strong>'+state.counts[o]+'</strong></div>').join('');show('done',3)};$('#backGraph').onclick=()=>{graph();show('graph',2)};$('#sendTeacher').onclick=async()=> {
+$('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').onclick=nextGroup;$('#toGraph').onclick=()=>{if(state.group||Object.values(state.counts).some((v,i)=>v!==(state.groupStart[state.options[i]]||0)))closeGroup();state.group='';state.groupStart={...state.counts};graph();show('graph',2)};$('#back').onclick=()=>{capture();renderTallies();show('collect',1)};$('#clear').onclick=()=>{state.bars=Object.fromEntries(state.options.map(o=>[o,0]));$('#feedback').textContent='';$('#finish').classList.add('hidden');graph()};$('#check').onclick=()=>{capture();if(!state.title.trim()||!state.x.trim()||!state.y.trim()){alert('Complete the graph title and both axis labels.');return}let ok=state.options.every(o=>state.bars[o]===state.counts[o]);$('#feedback').textContent=ok?'':'Almost there. Check your bar heights against your tally totals.';$('#finish').classList.toggle('hidden',!ok);if(ok)$('#successPop').classList.remove('hidden');save()};$('#successOK').onclick=()=>{$('#successPop').classList.add('hidden');$('#finish').focus()};$('#finish').onclick=()=>{$('#summary').innerHTML='<p><strong>'+esc(state.question)+'</strong></p>'+state.options.map(o=>'<div>'+esc(o)+': <strong>'+state.counts[o]+'</strong></div>').join('');show('done',3)};$('#backGraph').onclick=()=>{graph();show('graph',2)};async function ensurePdfTools(){
+  async function loadOne(test, urls, label){
+    if(test()) return;
+    for(const url of urls){
+      try{
+        await new Promise((resolve,reject)=>{
+          const script=document.createElement('script');
+          const timeout=setTimeout(()=>{script.remove();reject(Error('Timeout'));},9000);
+          script.onload=()=>{clearTimeout(timeout);resolve();};
+          script.onerror=()=>{clearTimeout(timeout);script.remove();reject(Error('Blocked'));};
+          script.src=url;
+          document.head.appendChild(script);
+        });
+        if(test()) return;
+      }catch(e){}
+    }
+    throw Error(label+' could not load. A school network filter or browser extension may be blocking PDF libraries.');
+  }
+  await loadOne(()=>typeof window.html2canvas==='function',[
+    'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  ],'Graph capture library');
+  await loadOne(()=>!!window.jspdf?.jsPDF,[
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
+  ],'PDF creation library');
+}
+$('#sendTeacher').onclick=async()=> {
   const btn=$('#sendTeacher');
   btn.disabled=true;
   btn.textContent='Preparing PDF…';
   let sheet;
   try {
-    if(!window.html2canvas||!window.jspdf) throw Error('PDF tools did not load. Check the internet connection.');
+    await ensurePdfTools();
     capture();
     // Build the same printable graph without invoking the browser print dialog.
     printWork(true);
