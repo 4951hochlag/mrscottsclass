@@ -82,7 +82,7 @@ $('#sendTeacher').onclick=async()=> {
       graph.style.setProperty('--rh',(300/Math.max(5,...Object.values(state.counts)))+'px');
     }
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale:2,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
+    const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale:1.25,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const w=190;
@@ -95,10 +95,10 @@ $('#sendTeacher').onclick=async()=> {
       slice.width=canvas.width;
       slice.height=Math.min(sliceHeight,canvas.height-top);
       slice.getContext('2d').drawImage(canvas,0,top,canvas.width,slice.height,0,0,slice.width,slice.height);
-      pdf.addImage(slice.toDataURL('image/png'),'PNG',10,10,w,slice.height*w/slice.width);
+      pdf.addImage(slice.toDataURL('image/jpeg',0.72),'JPEG',10,10,w,slice.height*w/slice.width,undefined,'FAST');
     }
     const data=pdf.output('datauristring');
-    if(data.length>6.5*1024*1024) throw Error('PDF is too large to submit.');
+    if(data.length>6.5*1024*1024) throw Error('PDF is still over the 5 MB upload limit. Try a shorter survey.');
     sessionStorage.setItem('surveyGraphPendingPdf',data.split(',')[1]);
     sessionStorage.setItem('surveyGraphPendingActivity','Survey and Graph');
     const receiver='https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec';
