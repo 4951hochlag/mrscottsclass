@@ -105,7 +105,9 @@ $('#sendTeacher').onclick=async()=> {
     const dialog=document.getElementById('submitDialog');
     dialog.showModal();
     const frame=document.getElementById('submissionFrame');
-    frame.src=receiver;
+    const handshake=crypto.randomUUID();
+    sessionStorage.setItem('surveyGraphHandshake',handshake);
+    frame.src=receiver+'?bridge='+encodeURIComponent(handshake);
     $('#submissionStatus').textContent='Select your name and send your completed graph.';
   } catch(err) {
     alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
@@ -116,18 +118,23 @@ $('#sendTeacher').onclick=async()=> {
   }
 };
 window.addEventListener('message',event=>{
-  if(event.origin!=='https://script.google.com' && !event.origin.endsWith('.googleusercontent.com')) return;
-  const frame=document.getElementById('submissionFrame');
-  if(event.source!==frame.contentWindow) return;
-  if(event.data?.type==='mrscott-ready'){
+  if(event.origin!=='https://script.google.com' &&
+     !/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/.test(event.origin)) return;
+  const data=event.data;
+  if(!data||data.bridge!==sessionStorage.getItem('surveyGraphHandshake')) return;
+  if(data.type==='mrscott-ready'){
     const pdf=sessionStorage.getItem('surveyGraphPendingPdf');
-    if(pdf) frame.contentWindow.postMessage({type:'mrscott-pdf',pdf,activity:'Survey and Graph'},event.origin);
+    if(pdf && event.source) event.source.postMessage({
+      type:'mrscott-pdf',pdf,activity:'Survey and Graph',bridge:data.bridge
+    },event.origin);
   }
-  if(event.data?.type==='mrscott-success'){
+  if(data.type==='mrscott-success'){
     sessionStorage.removeItem('surveyGraphPendingPdf');
     sessionStorage.removeItem('surveyGraphPendingActivity');
+    sessionStorage.removeItem('surveyGraphHandshake');
     $('#submissionStatus').textContent='Your work has been sent successfully!';
   }
-});$('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
+});
+$('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
 try{let old=JSON.parse(localStorage.getItem('surveyGraphApp'));if(old&&old.options&&old.options.length){Object.assign(state,old);$('#question').value=state.question;$('#options').value=state.options.join('\n');renderTallies();show('collect',1)}}catch(e){}
 </script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script></body></html>
