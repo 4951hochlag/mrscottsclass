@@ -231,7 +231,9 @@ function sendSubmissionRequest(fields, expectedType, statusMessage) {
     const cleanup=()=>{window.removeEventListener('message',receive);clearTimeout(timeout);form.remove();frame.remove();};
     const finish=(error,result)=>{if(settled)return;settled=true;cleanup();if(error)reject(error);else resolve(result);};
     const receive=(event)=>{
-      if(event.source!==frame.contentWindow)return;
+      // Apps Script may send from a nested Google-hosted frame rather than the
+      // immediate iframe. Accept only trusted Google origins plus the unique
+      // one-time request nonce and expected response type below.
       if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/.test(event.origin))return;
       if(!event.data||event.data.type!==expectedType||event.data.nonce!==nonce)return;
       finish(null,event.data);
