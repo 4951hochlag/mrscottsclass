@@ -17,7 +17,7 @@
 <label for="submissionPassword">Classroom password</label>
 <input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
 <small>The password is used only to sign in; it is not saved. A successful login lasts up to two hours in this browser tab.</small><button id="testStudentLogin" class="btn secondary" type="button">Test Password Login</button><button id="testLoginResponse" class="btn secondary" type="button">Test Login Response (No Password)</button>
-<button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
+<button id="submitStudentWork" class="btn primary" type="button" disabled>Send Test PDF</button>
 </div>
 <div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button id="testResponseConnection" class="btn secondary" type="button">Test automatic response</button><button id="testMessageConnection" class="btn secondary" type="button">Test message return</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
 </dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
@@ -116,8 +116,8 @@ $('#sendTeacher').onclick=async()=> {
     const dialog=document.getElementById('submitDialog');
     $('#submissionStudent').value='';
     $('#submissionPassword').value='';
-    $('#submitStudentWork').disabled=true;
-    $('#submissionStatus').textContent='Your PDF is ready. Select your name. Sending is temporarily disabled until the secure server connection is configured.';
+    $('#submitStudentWork').disabled=false;
+    $('#submissionStatus').textContent='Your PDF is ready. For this test, select Test Student and send a sample graph.';
     dialog.showModal();
   } catch(err) {
     alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
@@ -279,6 +279,55 @@ $('#testStudentLogin').onclick=async()=>{
     $('#submissionStatus').textContent='Could not verify login: '+error.message;
   }finally{button.disabled=false;}
 };
+// Controlled upload test: allow ONLY the synthetic Test Student identity.
+// Never submit actual students' work while this diagnostic is active.
+$('#submitStudentWork').onclick=async()=>{
+  const button=$('#submitStudentWork');
+  if($('#submissionStudent').value!=='Test Student'){
+    $('#submissionStatus').textContent='For now, select Test Student. Real student submissions are not enabled.';
+    return;
+  }
+  const token=sessionStorage.getItem('mrscottSubmissionToken');
+  const loggedAt=Number(sessionStorage.getItem('mrscottSubmissionLoginAt')||0);
+  if(!token||!loggedAt||Date.now()-loggedAt>=2*60*60*1000){
+    sessionStorage.removeItem('mrscottSubmissionToken');
+    sessionStorage.removeItem('mrscottSubmissionLoginAt');
+    $('#submissionStatus').textContent='Please use Test Password Login first. Sessions expire after two hours.';
+    return;
+  }
+  const pdf=window.pendingSurveyPdf;
+  if(typeof pdf!=='string'||!pdf.startsWith('JVBER')){
+    $('#submissionStatus').textContent='PDF not ready. Close this window and click Send to Teacher again.';
+    return;
+  }
+  if(pdf.length>Math.ceil(5*1024*1024*4/3)+100){
+    $('#submissionStatus').textContent='PDF exceeds the server upload limit.';
+    return;
+  }
+  button.disabled=true;
+  try{
+    const result=await sendSubmissionRequest({
+      action:'submit',token,student:'Test Student',
+      activity:'Survey and Graph Test',pdfBase64:pdf
+    },'mrscott-submit-result','Sending test PDF to Google Drive…');
+    if(result.success){
+      window.pendingSurveyPdf=null;
+      $('#submissionStatus').textContent='Test PDF saved to Google Drive! Filename: '+String(result.filename||'PDF saved');
+      button.disabled=true;
+    }else{
+      $('#submissionStatus').textContent='Google Drive did not save the PDF: '+String(result.message||'Unknown error');
+      if(/session expired/i.test(String(result.message||''))){
+        sessionStorage.removeItem('mrscottSubmissionToken');
+        sessionStorage.removeItem('mrscottSubmissionLoginAt');
+      }
+    }
+  }catch(error){
+    $('#submissionStatus').textContent='No upload confirmation received: '+error.message+' Check the Test Student folder before trying again to avoid duplicates.';
+  }finally{
+    if(window.pendingSurveyPdf)button.disabled=false;
+  }
+};
+// Actual student uploads are not enabled; only the synthetic Test Student is allowed.
 // The upload button remains disabled until a verified authenticated
 // server-side endpoint is available. Never put a shared secret in public code.
 $('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
