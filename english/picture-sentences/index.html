@@ -9,7 +9,7 @@
 <button class="choice" data-level="1">Level 1<br><small>Build with words + audio</small></button><button class="choice" data-level="2">Level 2<br><small>Put words in order</small></button><button class="choice" data-level="3">Level 3<br><small>Write with keywords</small></button><button class="choice" data-level="4">Level 4<br><small>Write from the picture</small></button></div>
 <h3>Picture Set</h3><div id="sets" class="choices"><button class="choice" data-set="1">Set 1</button><button class="choice" data-set="2">Set 2</button><button class="choice" data-set="3">Set 3</button><button class="choice" data-set="4">Set 4</button><button class="choice" data-set="5">Set 5</button><button class="choice" data-set="6">Set 6</button><button class="choice" data-set="7">Set 7</button></div><button id="start" class="start">Start</button></section>
 <section id="activity" class="card hidden"><div class="topline"><span id="levelLabel"></span><span id="counter"></span></div><div class="progress"><span id="bar"></span></div><img id="pic" class="picture" alt="Picture for sentence writing"><p id="prompt" class="prompt"></p><div id="keywords" class="keywords hidden"></div><div id="sentence" class="sentence hidden"></div><div id="bank" class="bank hidden"></div><textarea id="entry" class="textentry hidden" rows="3" placeholder="Write your sentence here."></textarea><div id="feedback" class="feedback"></div><div class="actions"><button id="clear" class="secondary hidden">Start over</button><button id="check" class="primary">Check</button><button id="next" class="next hidden">Next picture</button></div></section>
-<section id="finish" class="card finish hidden"><h2>Great work!</h2><p>You finished this picture set.</p><div id="finishControls" class="actions"><button id="showReport" class="secondary">See my work</button><button id="printPdf" class="pdf">Save as PDF</button><button id="again" class="primary">Choose another activity</button></div></section>
+<section id="finish" class="card finish hidden"><h2>Great work!</h2><p>You finished this picture set.</p><div id="finishControls" class="actions"><button id="showReport" class="secondary">See my work</button><button id="printPdf" class="pdf">Save as PDF</button><button id="sendTeacher" class="primary" type="button">Send to Teacher</button><button id="again" class="primary">Choose another activity</button></div></section>
 <section id="report" class="card report hidden"><h2>My Picture Sentences</h2><p id="reportInfo" class="note"></p><div id="reportBody"></div></section></main>
 <script>
 const ALL=[{"set":1,"img":1,"s":"The woman is walking her dog.","k":["woman","walks","dog"]},{"set":1,"img":2,"s":"The boy is jumping over a puddle.","k":["boy","jumps","puddle"]},{"set":1,"img":3,"s":"The men are eating pizza.","k":["men","eat","pizza"]},{"set":1,"img":4,"s":"The woman is listening to music.","k":["woman","listens","music"]},{"set":1,"img":5,"s":"The boys are fighting.","k":["boys","fighting"]},{"set":1,"img":6,"s":"The man is slipping in a puddle.","k":["man","slips","puddle"]},{"set":2,"img":1,"s":"The boy is building a sandcastle.","k":["boy","builds","sandcastle"]},{"set":2,"img":2,"s":"The child is riding a bike.","k":["child","rides","bike"]},{"set":2,"img":3,"s":"The cat is sleeping on a pillow.","k":["cat","sleeps","pillow"]},{"set":2,"img":4,"s":"The woman is cooking food.","k":["woman","cooks","food"]},{"set":2,"img":5,"s":"The man is reading a book.","k":["man","reads","book"]},{"set":2,"img":6,"s":"The bird is flying in the sky.","k":["bird","flies","sky"]},{"set":3,"img":1,"s":"The baby is eating food.","k":["baby","eats","food"]},{"set":3,"img":2,"s":"The dog is running with a ball.","k":["dog","runs","ball"]},{"set":3,"img":3,"s":"The woman is writing in a notebook.","k":["woman","writes","notebook"]},{"set":3,"img":4,"s":"The monkey is hanging from a branch.","k":["monkey","hangs","branch"]},{"set":3,"img":5,"s":"The man is laughing.","k":["man","laughs"]},{"set":3,"img":6,"s":"The family is ice skating.","k":["family","ice skating"]},{"set":4,"img":1,"s":"The boy is playing basketball.","k":["boy","plays","basketball"]},{"set":4,"img":2,"s":"The people are running.","k":["people","running"]},{"set":4,"img":3,"s":"The man is waving hello.","k":["man","waves","hello"]},{"set":4,"img":4,"s":"The couple is dancing together.","k":["couple","dances"]},{"set":4,"img":5,"s":"The man is playing chess.","k":["man","plays","chess"]},{"set":4,"img":6,"s":"The women are laughing together.","k":["women","laugh"]},{"set":5,"img":1,"s":"The girl is playing the piano.","k":["girl","plays","piano"]},{"set":5,"img":2,"s":"The people are painting the wall.","k":["people","paint","wall"]},{"set":5,"img":3,"s":"The people are exercising together.","k":["people","exercise"]},{"set":5,"img":4,"s":"The girl is doing a puzzle.","k":["girl","puzzle"]},{"set":5,"img":5,"s":"The man is pointing at you.","k":["man","points"]},{"set":5,"img":6,"s":"The woman is driving a car.","k":["woman","drives","car"]},{"set":6,"img":1,"s":"The boy is sleeping at his desk.","k":["boy","sleeps","desk"]},{"set":6,"img":2,"s":"The family is shopping for groceries.","k":["family","shops","groceries"]},{"set":6,"img":3,"s":"The boy is watching a video.","k":["boy","watches","video"]},{"set":6,"img":4,"s":"The boy is building with blocks.","k":["boy","builds","blocks"]},{"set":6,"img":5,"s":"The man is using his phone while driving.","k":["man","phone","driving"]},{"set":6,"img":6,"s":"The woman is talking to the boy.","k":["woman","talks","boy"]},{"set":7,"img":1,"s":"The people are playing a board game.","k":["people","play","board game"]},{"set":7,"img":2,"s":"The couple is eating a meal.","k":["couple","eats","meal"]},{"set":7,"img":3,"s":"The runners are racing on the track.","k":["runners","race","track"]},{"set":7,"img":4,"s":"The girl is holding a piglet.","k":["girl","holds","piglet"]},{"set":7,"img":5,"s":"The girl is writing in her notebook.","k":["girl","writes","notebook"]},{"set":7,"img":6,"s":"The bird is singing on a branch.","k":["bird","sings","branch"]}];
@@ -43,4 +43,53 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 $('showReport').onclick=()=>{$('report').classList.toggle('hidden');if(!$('report').classList.contains('hidden'))$('report').scrollIntoView({behavior:'smooth'})};
 $('printPdf').onclick=()=>{$('report').classList.remove('hidden');buildReport();setTimeout(()=>window.print(),150)};
 $('again').onclick=()=>location.reload();
-</script></body></html>
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="../../shared/send-to-teacher.js"></script>
+<script>
+async function pictureSentencesPdfBase64(){
+  if(!window.jspdf||!window.jspdf.jsPDF)throw Error('PDF library did not load. Please refresh.');
+  if(!items.length||!document.getElementById('finish')||document.getElementById('finish').classList.contains('hidden'))throw Error('Finish the picture set first.');
+  const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  const pageW=210,margin=18,usable=174;
+  const drawText=(text,x,y,width)=>{const lines=pdf.splitTextToSize(String(text),width);pdf.text(lines,x,y);return y+lines.length*6;};
+  for(let i=0;i<items.length;i++){
+    if(i)pdf.addPage();
+    pdf.setFont('helvetica','bold');pdf.setFontSize(19);pdf.text('My Picture Sentences',margin,20);
+    pdf.setFont('helvetica','normal');pdf.setFontSize(11);pdf.text('Level '+level+'  |  Picture Set '+setNo+'  |  Picture '+(i+1)+' of '+items.length,margin,29);
+    let y=37;
+    const img=new Image();img.src=imgPath(items[i]);
+    try{
+      await new Promise((resolve,reject)=>{if(img.complete&&img.naturalWidth)return resolve();img.onload=resolve;img.onerror=()=>reject(Error('Picture could not load'));});
+      const maxH=115,ratio=Math.min(usable/img.naturalWidth,maxH/img.naturalHeight);
+      const w=img.naturalWidth*ratio,h=img.naturalHeight*ratio;
+      const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+      cv.getContext('2d').drawImage(img,0,0);
+      pdf.addImage(cv.toDataURL('image/jpeg',0.8),'JPEG',margin+(usable-w)/2,y,w,h);
+      y+=h+12;
+    }catch(e){pdf.setFontSize(10);pdf.text('[Picture unavailable]',margin,y);y+=12;}
+    const all=attempts[i]||[];
+    if(!all.length){pdf.setFontSize(12);pdf.text('No recorded attempts',margin,y);}
+    for(let j=0;j<all.length;j++){
+      if(y>267){pdf.addPage();y=20;}
+      pdf.setFont('helvetica','bold');pdf.setFontSize(11);pdf.text((j+1)+'. Attempt',margin,y);y+=7;
+      pdf.setFont('helvetica','normal');pdf.setFontSize(12);
+      const lines=pdf.splitTextToSize(String(all[j]||'(blank)'),usable);
+      for(const line of lines){if(y>277){pdf.addPage();y=20;}pdf.text(line,margin,y);y+=6;}
+      y+=7;
+    }
+  }
+  return pdf.output('datauristring');
+}
+if(window.MrScottSendToTeacher){
+  MrScottSendToTeacher.mount({
+    button:'#sendTeacher',
+    activity:'Picture Sentences',
+    getPdfBase64:pictureSentencesPdfBase64
+  });
+}else{
+  document.getElementById('sendTeacher').disabled=true;
+  document.getElementById('sendTeacher').title='Submission component could not load. Refresh this page.';
+}
+</script>
+</body></html>
