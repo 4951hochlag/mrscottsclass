@@ -19,7 +19,7 @@
 <small>For the test, enter the password only when submissions are enabled. It is not stored in the website code.</small>
 <button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
 </div>
-<div class="actions"><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
+<div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
 </dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
 const $=s=>document.querySelector(s), state={question:'',options:[],counts:{},groups:[],group:'',groupStart:{},bars:{},title:'',x:'',y:''};
 function save(){try{localStorage.setItem('surveyGraphApp',JSON.stringify(state))}catch(e){}}
@@ -126,6 +126,21 @@ $('#sendTeacher').onclick=async()=> {
     btn.disabled=false;
     btn.textContent='Send to Teacher';
   }
+};
+// Test POST navigation without sending passwords, tokens, or PDFs.
+// This opens the response in a separate tab; it does not prove that a
+// GitHub Pages page can read that response across origins.
+$('#testBackendConnection').onclick=()=>{
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action='https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec';
+  form.target='_blank';
+  const input=document.createElement('input');
+  input.type='hidden';input.name='action';input.value='ping';
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
 };
 // The upload button remains disabled until a verified authenticated
 // server-side endpoint is available. Never put a shared secret in public code.
