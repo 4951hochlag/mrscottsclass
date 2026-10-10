@@ -8,7 +8,19 @@
 <section class="screen" id="collect"><div class="panel"><h2 id="qdisplay"></h2><div class="sub" id="groupDisplay"></div><div class="tally-grid" id="tallies"></div><div class="total">Total surveyed: <span id="total">0</span></div><div class="actions"><button class="btn secondary" id="nextClass">Next Class / Group</button><button class="btn danger" id="endSurvey">End Survey / Start New</button><button class="btn primary" id="toGraph">Make My Graph →</button></div><div class="classlog hidden" id="classlog"><strong>Groups surveyed</strong><div id="logs"></div></div></div></section>
 <section class="screen" id="graph"><div class="panel"><h2>Make a Bar Graph</h2><p class="sub">Use your tally totals to build each bar. Tap the blocks to set the height.</p><div class="actions"><button type="button" class="btn primary" id="showData" aria-haspopup="dialog" aria-controls="dataPopup">Show Data</button></div><div class="scroll" id="graphArea"></div><div class="feedback" id="feedback"></div><div class="actions"><button class="btn secondary" id="back">← Tallies</button><button class="btn danger" id="startNewSurvey">Start New Survey</button><button class="btn danger" id="clear">Clear Graph</button><button class="btn primary" id="check">Check My Graph</button><button class="btn primary hidden" id="finish">Finish →</button></div></div></section>
 <div class="success-pop hidden" id="successPop" role="dialog" aria-modal="true" aria-labelledby="successTitle"><div class="success-box"><div class="success-check">✓</div><h2 id="successTitle">Great work!</h2><p>Every bar matches your tally data.</p><button class="btn" id="successOK">OK</button></div></div><section class="screen" id="done"><div class="panel finish"><div class="big">✓</div><h2>Survey Complete!</h2><p>You collected real data and turned it into a bar graph.</p><div id="summary"></div><div class="actions"><button class="btn secondary" id="backGraph">← View Graph</button><button class="btn primary" id="sendTeacher">Send to Teacher</button><button class="btn primary" id="savePDF">Save My Work as PDF</button><button class="btn primary" id="newSurvey">New Survey</button></div></div></section>
-</main><dialog id="submitDialog" class="data-popup" aria-label="Send to Teacher"><h2>Send to Teacher</h2><p id="submissionStatus" role="status">Preparing submission…</p><iframe id="submissionFrame" title="Student submission" style="width:100%;height:460px;border:0" referrerpolicy="no-referrer"></iframe><div class="actions"><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div></dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
+</main><dialog id="submitDialog" class="data-popup" aria-labelledby="sendTeacherTitle">
+<h2 id="sendTeacherTitle">Send to Teacher</h2>
+<p id="submissionStatus" role="status" aria-live="polite">Preparing your completed graph…</p>
+<div style="display:grid;gap:12px;max-width:400px;margin:18px auto;text-align:left">
+<label for="submissionStudent">Student name</label>
+<select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your name</option><option value="Test Student">Test Student</option></select>
+<label for="submissionPassword">Classroom password</label>
+<input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
+<small>For the test, enter the password only when submissions are enabled. It is not stored in the website code.</small>
+<button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
+</div>
+<div class="actions"><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
+</dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
 const $=s=>document.querySelector(s), state={question:'',options:[],counts:{},groups:[],group:'',groupStart:{},bars:{},title:'',x:'',y:''};
 function save(){try{localStorage.setItem('surveyGraphApp',JSON.stringify(state))}catch(e){}}
 function show(id,step){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');document.querySelectorAll('.step').forEach(x=>x.classList.remove('on'));$('#s'+step).classList.add('on');scrollTo({top:0,behavior:'smooth'})}
@@ -99,16 +111,14 @@ $('#sendTeacher').onclick=async()=> {
     }
     const data=pdf.output('datauristring');
     if(data.length>6.5*1024*1024) throw Error('PDF is still over the 5 MB upload limit. Try a shorter survey.');
-    sessionStorage.setItem('surveyGraphPendingPdf',data.split(',')[1]);
-    sessionStorage.setItem('surveyGraphPendingActivity','Survey and Graph');
-    const receiver='https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec';
+    // Keep the generated PDF only in memory for this test, not in persistent storage.
+    window.pendingSurveyPdf=data.split(',')[1];
     const dialog=document.getElementById('submitDialog');
+    $('#submissionStudent').value='';
+    $('#submissionPassword').value='';
+    $('#submitStudentWork').disabled=true;
+    $('#submissionStatus').textContent='Your PDF is ready. Select your name. Sending is temporarily disabled until the secure server connection is configured.';
     dialog.showModal();
-    const frame=document.getElementById('submissionFrame');
-    const handshake=crypto.randomUUID();
-    sessionStorage.setItem('surveyGraphHandshake',handshake);
-    frame.src=receiver+'?bridge='+encodeURIComponent(handshake);
-    $('#submissionStatus').textContent='Select your name and send your completed graph.';
   } catch(err) {
     alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
   } finally {
@@ -117,24 +127,8 @@ $('#sendTeacher').onclick=async()=> {
     btn.textContent='Send to Teacher';
   }
 };
-window.addEventListener('message',event=>{
-  if(event.origin!=='https://script.google.com' &&
-     !/^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/.test(event.origin)) return;
-  const data=event.data;
-  if(!data||data.bridge!==sessionStorage.getItem('surveyGraphHandshake')) return;
-  if(data.type==='mrscott-ready'){
-    const pdf=sessionStorage.getItem('surveyGraphPendingPdf');
-    if(pdf && event.source) event.source.postMessage({
-      type:'mrscott-pdf',pdf,activity:'Survey and Graph',bridge:data.bridge
-    },event.origin);
-  }
-  if(data.type==='mrscott-success'){
-    sessionStorage.removeItem('surveyGraphPendingPdf');
-    sessionStorage.removeItem('surveyGraphPendingActivity');
-    sessionStorage.removeItem('surveyGraphHandshake');
-    $('#submissionStatus').textContent='Your work has been sent successfully!';
-  }
-});
+// The upload button remains disabled until a verified authenticated
+// server-side endpoint is available. Never put a shared secret in public code.
 $('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
 try{let old=JSON.parse(localStorage.getItem('surveyGraphApp'));if(old&&old.options&&old.options.length){Object.assign(state,old);$('#question').value=state.question;$('#options').value=state.options.join('\n');renderTallies();show('collect',1)}}catch(e){}
 </script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script></body></html>
