@@ -90,6 +90,30 @@ $('#sendTeacher').onclick=async()=> {
     sheet.prepend(captureStyles);
     const graph=sheet.querySelector('#printGraphClone');
     if(graph) {
+      // html2canvas does not consistently reproduce vertical writing-mode
+      // combined with CSS rotation. Rasterize only the y-axis label with a
+      // native canvas so the PDF always reads bottom-to-top.
+      const yLabel=graph.querySelector('.y-label-value');
+      if(yLabel){
+        const labelText=yLabel.textContent||'';
+        const width=42,height=300,scale=2;
+        const labelCanvas=document.createElement('canvas');
+        labelCanvas.width=width*scale;
+        labelCanvas.height=height*scale;
+        labelCanvas.style.cssText='display:block;width:42px;height:300px;max-width:42px;flex:none;margin:auto';
+        labelCanvas.setAttribute('aria-label',labelText);
+        const ctx=labelCanvas.getContext('2d');
+        ctx.scale(scale,scale);
+        ctx.translate(width/2,height/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillStyle='#172033';
+        ctx.font='800 16px Arial, sans-serif';
+        ctx.textAlign='center';
+        ctx.textBaseline='middle';
+        const maxTextWidth=height-18;
+        ctx.fillText(labelText,0,0,maxTextWidth);
+        yLabel.replaceWith(labelCanvas);
+      }
       graph.style.setProperty('--gh','300px');
       graph.style.setProperty('--rh',(300/Math.max(5,...Object.values(state.counts)))+'px');
     }
