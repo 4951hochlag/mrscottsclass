@@ -19,7 +19,7 @@
 <small>For the test, enter the password only when submissions are enabled. It is not stored in the website code.</small>
 <button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
 </div>
-<div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
+<div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button id="testResponseConnection" class="btn secondary" type="button">Test automatic response</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
 </dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
 const $=s=>document.querySelector(s), state={question:'',options:[],counts:{},groups:[],group:'',groupStart:{},bars:{},title:'',x:'',y:''};
 function save(){try{localStorage.setItem('surveyGraphApp',JSON.stringify(state))}catch(e){}}
@@ -141,6 +141,29 @@ $('#testBackendConnection').onclick=()=>{
   document.body.appendChild(form);
   form.submit();
   form.remove();
+};
+// Check whether GitHub Pages can read the response, not just send a POST.
+// No credentials or student data are sent during this diagnostic.
+$('#testResponseConnection').onclick=async()=>{
+  const button=$('#testResponseConnection');
+  button.disabled=true;
+  $('#submissionStatus').textContent='Checking whether the website can read Google’s response…';
+  try{
+    const response=await fetch('https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec',{
+      method:'POST',
+      body:new URLSearchParams({action:'ping'}),
+      redirect:'follow',
+      credentials:'omit'
+    });
+    const result=await response.json();
+    $('#submissionStatus').textContent=result.success
+      ? 'Automatic response test passed: '+String(result.message||'Success')
+      : 'Google replied, but the test failed: '+String(result.message||'Unknown error');
+  }catch(error){
+    $('#submissionStatus').textContent='Automatic response test blocked or failed ('+error.name+'). The earlier new-tab POST can work even when the browser cannot read Google’s reply. No student work was sent.';
+  }finally{
+    button.disabled=false;
+  }
 };
 // The upload button remains disabled until a verified authenticated
 // server-side endpoint is available. Never put a shared secret in public code.
