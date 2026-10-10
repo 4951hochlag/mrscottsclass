@@ -16,7 +16,7 @@
 <select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your initials</option><option value="A.D.">A.D.</option><option value="A.D.A.">A.D.A.</option><option value="G.A.">G.A.</option><option value="E.P.">E.P.</option><option value="G.M.">G.M.</option><option value="V.P.">V.P.</option><option value="M.F.">M.F.</option><option value="L.T.">L.T.</option><option value="Test Student">Test Student (testing only)</option></select>
 <label for="submissionPassword">Classroom password</label>
 <input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
-<small>The password is used only to sign in; it is not saved. A successful login lasts up to two hours in this browser tab.</small><button id="testStudentLogin" class="btn secondary" type="button">Test Password Login</button>
+<small>The password is used only to sign in; it is not saved. A successful login lasts up to two hours in this browser tab.</small><button id="testStudentLogin" class="btn secondary" type="button">Test Password Login</button><button id="testLoginResponse" class="btn secondary" type="button">Test Login Response (No Password)</button>
 <button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
 </div>
 <div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button id="testResponseConnection" class="btn secondary" type="button">Test automatic response</button><button id="testMessageConnection" class="btn secondary" type="button">Test message return</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
@@ -245,6 +245,18 @@ function sendSubmissionRequest(fields, expectedType, statusMessage) {
     form.submit();
   });
 }
+$('#testLoginResponse').onclick=async()=>{
+  const button=$('#testLoginResponse');
+  button.disabled=true;
+  try{
+    const result=await sendSubmissionRequest({action:'login-test'},'mrscott-login-result','Testing login response without a password…');
+    $('#submissionStatus').textContent=result.success
+      ? 'Login response test succeeded: '+String(result.message||'Google responded.')
+      : 'Login response test returned an error: '+String(result.message||'Unknown error');
+  }catch(error){
+    $('#submissionStatus').textContent='Login response test failed: '+error.message;
+  }finally{button.disabled=false;}
+};
 $('#testStudentLogin').onclick=async()=>{
   const button=$('#testStudentLogin');
   const password=$('#submissionPassword').value;
