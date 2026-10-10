@@ -133,7 +133,7 @@ $('#sendTeacher').onclick=async()=> {
 $('#testBackendConnection').onclick=()=>{
   const form=document.createElement('form');
   form.method='POST';
-  form.action='https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec';
+  form.action='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
   form.target='_blank';
   const input=document.createElement('input');
   input.type='hidden';input.name='action';input.value='ping';
@@ -149,7 +149,7 @@ $('#testResponseConnection').onclick=async()=>{
   button.disabled=true;
   $('#submissionStatus').textContent='Checking whether the website can read Google’s response…';
   try{
-    const response=await fetch('https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec',{
+    const response=await fetch('https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec',{
       method:'POST',
       body:new URLSearchParams({action:'ping'}),
       redirect:'follow',
@@ -177,7 +177,7 @@ $('#testMessageConnection').onclick=()=>{
   iframe.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
   const form=document.createElement('form');
   form.method='POST';
-  form.action='https://script.google.com/macros/s/AKfycby84LrvB8dIWfGChX0nC-zLoU00tmHM6v4UCoI9YTdoOssogjgyYzZKrWH1awC-_Mg/exec';
+  form.action='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
   form.target=iframe.name;
   for(const [name,value] of Object.entries({action:'ping-message',nonce})){
     const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);
