@@ -16,7 +16,7 @@
 <select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your initials</option><option value="A.D.">A.D.</option><option value="A.D.A.">A.D.A.</option><option value="G.A.">G.A.</option><option value="E.P.">E.P.</option><option value="G.M.">G.M.</option><option value="V.P.">V.P.</option><option value="M.F.">M.F.</option><option value="L.T.">L.T.</option><option value="Test Student">Test Student (testing only)</option></select>
 <label for="submissionPassword">Classroom password</label>
 <input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
-<small>For the test, enter the password only when submissions are enabled. It is not stored in the website code.</small>
+<small>The password is used only to sign in; it is not saved. A successful login lasts up to two hours in this browser tab.</small><button id="testStudentLogin" class="btn secondary" type="button">Test Password Login</button>
 <button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
 </div>
 <div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button id="testResponseConnection" class="btn secondary" type="button">Test automatic response</button><button id="testMessageConnection" class="btn secondary" type="button">Test message return</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
@@ -209,6 +209,61 @@ $('#testMessageConnection').onclick=()=>{
   document.body.appendChild(form);
   $('#submissionStatus').textContent='Waiting for Google to send a confirmation message…';
   form.submit();
+};
+// Login-only integration test. Never send a PDF until authenticated uploads
+// have been tested separately. Tokens remain in tab-scoped sessionStorage.
+const STUDENT_SUBMISSION_URL='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
+function sendSubmissionRequest(fields, expectedType, statusMessage) {
+  return new Promise((resolve,reject)=>{
+    const nonce=crypto.randomUUID();
+    const frame=document.createElement('iframe');
+    frame.name='studentWorkFrame_'+nonce.replace(/-/g,'');
+    frame.title='Student work connection';
+    frame.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+    const form=document.createElement('form');
+    form.method='POST';form.action=STUDENT_SUBMISSION_URL;form.target=frame.name;
+    for(const [name,value] of Object.entries({...fields,nonce})){
+      const field=document.createElement('input');
+      field.type='hidden';field.name=name;field.value=String(value);
+      form.appendChild(field);
+    }
+    let settled=false;
+    const cleanup=()=>{window.removeEventListener('message',receive);clearTimeout(timeout);form.remove();frame.remove();};
+    const finish=(error,result)=>{if(settled)return;settled=true;cleanup();if(error)reject(error);else resolve(result);};
+    const receive=(event)=>{
+      if(event.source!==frame.contentWindow)return;
+      if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/.test(event.origin))return;
+      if(!event.data||event.data.type!==expectedType||event.data.nonce!==nonce)return;
+      finish(null,event.data);
+    };
+    window.addEventListener('message',receive);
+    const timeout=setTimeout(()=>finish(new Error('No response received after 20 seconds. Try Incognito if Google blocks this browser profile.')),20000);
+    document.body.appendChild(frame);document.body.appendChild(form);
+    $('#submissionStatus').textContent=statusMessage;
+    form.submit();
+  });
+}
+$('#testStudentLogin').onclick=async()=>{
+  const button=$('#testStudentLogin');
+  const password=$('#submissionPassword').value;
+  if(!password){$('#submissionStatus').textContent='Enter the classroom password first.';return;}
+  button.disabled=true;
+  try{
+    const result=await sendSubmissionRequest({action:'login',password},'mrscott-login-result','Checking classroom password…');
+    $('#submissionPassword').value='';
+    if(result.success&&typeof result.token==='string'&&result.token.length>20){
+      sessionStorage.setItem('mrscottSubmissionToken',result.token);
+      sessionStorage.setItem('mrscottSubmissionLoginAt',String(Date.now()));
+      $('#submissionStatus').textContent='Password accepted! The temporary session is ready. PDF sending is not enabled yet.';
+    }else{
+      sessionStorage.removeItem('mrscottSubmissionToken');
+      sessionStorage.removeItem('mrscottSubmissionLoginAt');
+      $('#submissionStatus').textContent='Login unsuccessful: '+String(result.message||'Please check the password.');
+    }
+  }catch(error){
+    $('#submissionPassword').value='';
+    $('#submissionStatus').textContent='Could not verify login: '+error.message;
+  }finally{button.disabled=false;}
 };
 // The upload button remains disabled until a verified authenticated
 // server-side endpoint is available. Never put a shared secret in public code.
