@@ -13,13 +13,16 @@
 <p id="submissionStatus" role="status" aria-live="polite">Preparing your completed graph…</p>
 <div style="display:grid;gap:12px;max-width:400px;margin:18px auto;text-align:left">
 <label for="submissionStudent">Student initials</label>
-<select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your initials</option><option value="A.D.">A.D.</option><option value="A.D.A.">A.D.A.</option><option value="G.A.">G.A.</option><option value="E.P.">E.P.</option><option value="G.M.">G.M.</option><option value="V.P.">V.P.</option><option value="M.F.">M.F.</option><option value="L.T.">L.T.</option><option value="Test Student">Test Student (testing only)</option></select>
+<select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your initials</option><option value="A.D.">A.D.</option><option value="A.D.A.">A.D.A.</option><option value="G.A.">G.A.</option><option value="E.P.">E.P.</option><option value="G.M.">G.M.</option><option value="V.P.">V.P.</option><option value="M.F.">M.F.</option><option value="L.T.">L.T.</option></select>
+<div id="submissionLoginBox">
 <label for="submissionPassword">Classroom password</label>
 <input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
-<small>The password is used only to sign in; it is not saved. A successful login lasts up to two hours in this browser tab.</small><button id="testStudentLogin" class="btn secondary" type="button">Test Password Login</button><button id="testLoginResponse" class="btn secondary" type="button">Test Login Response (No Password)</button>
-<button id="submitStudentWork" class="btn primary" type="button" disabled>Send Test PDF</button>
+<small>Enter the classroom password once per browser session.</small>
+<button id="studentLogin" class="btn secondary" type="button">Unlock Sending</button>
 </div>
-<div class="actions"><button id="testBackendConnection" class="btn secondary" type="button">Test Google connection</button><button id="testResponseConnection" class="btn secondary" type="button">Test automatic response</button><button id="testMessageConnection" class="btn secondary" type="button">Test message return</button><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
+<button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
+</div>
+<div class="actions"><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
 </dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
 const $=s=>document.querySelector(s), state={question:'',options:[],counts:{},groups:[],group:'',groupStart:{},bars:{},title:'',x:'',y:''};
 function save(){try{localStorage.setItem('surveyGraphApp',JSON.stringify(state))}catch(e){}}
@@ -140,8 +143,8 @@ $('#sendTeacher').onclick=async()=> {
     const dialog=document.getElementById('submitDialog');
     $('#submissionStudent').value='';
     $('#submissionPassword').value='';
-    $('#submitStudentWork').disabled=false;
-    $('#submissionStatus').textContent='Your PDF is ready. For this test, select Test Student and send a sample graph.';
+    $('#submissionStatus').textContent='Your PDF is ready. Choose your initials and send it to your teacher.';
+    refreshSubmissionLogin();
     dialog.showModal();
   } catch(err) {
     alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
@@ -150,89 +153,6 @@ $('#sendTeacher').onclick=async()=> {
     btn.disabled=false;
     btn.textContent='Send to Teacher';
   }
-};
-// Test POST navigation without sending passwords, tokens, or PDFs.
-// This opens the response in a separate tab; it does not prove that a
-// GitHub Pages page can read that response across origins.
-$('#testBackendConnection').onclick=()=>{
-  const form=document.createElement('form');
-  form.method='POST';
-  form.action='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
-  form.target='_blank';
-  const input=document.createElement('input');
-  input.type='hidden';input.name='action';input.value='ping';
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-};
-// Check whether GitHub Pages can read the response, not just send a POST.
-// No credentials or student data are sent during this diagnostic.
-$('#testResponseConnection').onclick=async()=>{
-  const button=$('#testResponseConnection');
-  button.disabled=true;
-  $('#submissionStatus').textContent='Checking whether the website can read Google’s response…';
-  try{
-    const response=await fetch('https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec',{
-      method:'POST',
-      body:new URLSearchParams({action:'ping'}),
-      redirect:'follow',
-      credentials:'omit'
-    });
-    const result=await response.json();
-    $('#submissionStatus').textContent=result.success
-      ? 'Automatic response test passed: '+String(result.message||'Success')
-      : 'Google replied, but the test failed: '+String(result.message||'Unknown error');
-  }catch(error){
-    $('#submissionStatus').textContent='Automatic response test blocked or failed ('+error.name+'). The earlier new-tab POST can work even when the browser cannot read Google’s reply. No student work was sent.';
-  }finally{
-    button.disabled=false;
-  }
-};
-// Diagnostic: form POST to a hidden iframe and wait for a verified message.
-// This does not send passwords, tokens, or student information.
-$('#testMessageConnection').onclick=()=>{
-  const button=$('#testMessageConnection');
-  button.disabled=true;
-  const nonce=crypto.randomUUID();
-  const iframe=document.createElement('iframe');
-  iframe.name='surveyPingFrame_'+nonce.replace(/-/g,'');
-  iframe.title='Google connection test';
-  iframe.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
-  const form=document.createElement('form');
-  form.method='POST';
-  form.action='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
-  form.target=iframe.name;
-  for(const [name,value] of Object.entries({action:'ping-message',nonce})){
-    const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);
-  }
-  let finished=false;
-  const cleanup=()=>{
-    window.removeEventListener('message',receive);
-    clearTimeout(timeout);
-    form.remove();iframe.remove();button.disabled=false;
-  };
-  const receive=(event)=>{
-    if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/.test(event.origin))return;
-    const data=event.data;
-    if(!data||data.type!=='mrscott-ping-result'||data.nonce!==nonce)return;
-    if(finished)return;
-    finished=true;
-    $('#submissionStatus').textContent=data.success
-      ? 'Message return succeeded! The website received a verified test confirmation.'
-      : 'Google returned a test failure: '+String(data.message||'Unknown error');
-    cleanup();
-  };
-  window.addEventListener('message',receive);
-  const timeout=setTimeout(()=>{
-    if(finished)return;finished=true;
-    $('#submissionStatus').textContent='No automatic message received after 15 seconds. Google may block the embedded response, or the new Apps Script handler may not yet be deployed.';
-    cleanup();
-  },15000);
-  document.body.appendChild(iframe);
-  document.body.appendChild(form);
-  $('#submissionStatus').textContent='Waiting for Google to send a confirmation message…';
-  form.submit();
 };
 // Login-only integration test. Never send a PDF until authenticated uploads
 // have been tested separately. Tokens remain in tab-scoped sessionStorage.
@@ -269,20 +189,8 @@ function sendSubmissionRequest(fields, expectedType, statusMessage) {
     form.submit();
   });
 }
-$('#testLoginResponse').onclick=async()=>{
-  const button=$('#testLoginResponse');
-  button.disabled=true;
-  try{
-    const result=await sendSubmissionRequest({action:'login-test'},'mrscott-login-result','Testing login response without a password…');
-    $('#submissionStatus').textContent=result.success
-      ? 'Login response test succeeded: '+String(result.message||'Google responded.')
-      : 'Login response test returned an error: '+String(result.message||'Unknown error');
-  }catch(error){
-    $('#submissionStatus').textContent='Login response test failed: '+error.message;
-  }finally{button.disabled=false;}
-};
-$('#testStudentLogin').onclick=async()=>{
-  const button=$('#testStudentLogin');
+$('#studentLogin').onclick=async()=>{
+  const button=$('#studentLogin');
   const password=$('#submissionPassword').value;
   if(!password){$('#submissionStatus').textContent='Enter the classroom password first.';return;}
   button.disabled=true;
@@ -292,7 +200,8 @@ $('#testStudentLogin').onclick=async()=>{
     if(result.success&&typeof result.token==='string'&&result.token.length>20){
       sessionStorage.setItem('mrscottSubmissionToken',result.token);
       sessionStorage.setItem('mrscottSubmissionLoginAt',String(Date.now()));
-      $('#submissionStatus').textContent='Password accepted! The temporary session is ready. PDF sending is not enabled yet.';
+      $('#submissionStatus').textContent='Classroom unlocked. Choose your initials and send your work.';
+      refreshSubmissionLogin();
     }else{
       sessionStorage.removeItem('mrscottSubmissionToken');
       sessionStorage.removeItem('mrscottSubmissionLoginAt');
@@ -303,20 +212,31 @@ $('#testStudentLogin').onclick=async()=>{
     $('#submissionStatus').textContent='Could not verify login: '+error.message;
   }finally{button.disabled=false;}
 };
-// Controlled upload test: allow ONLY the synthetic Test Student identity.
-// Never submit actual students' work while this diagnostic is active.
-$('#submitStudentWork').onclick=async()=>{
-  const button=$('#submitStudentWork');
-  if($('#submissionStudent').value!=='Test Student'){
-    $('#submissionStatus').textContent='For now, select Test Student. Real student submissions are not enabled.';
-    return;
-  }
+const CLASSROOM_STUDENTS=['A.D.','A.D.A.','G.A.','E.P.','G.M.','V.P.','M.F.','L.T.'];
+function validSubmissionToken(){
   const token=sessionStorage.getItem('mrscottSubmissionToken');
   const loggedAt=Number(sessionStorage.getItem('mrscottSubmissionLoginAt')||0);
-  if(!token||!loggedAt||Date.now()-loggedAt>=2*60*60*1000){
+  return token&&loggedAt&&Date.now()-loggedAt<2*60*60*1000?token:null;
+}
+function refreshSubmissionLogin(){
+  const loggedIn=!!validSubmissionToken();
+  $('#submissionLoginBox').style.display=loggedIn?'none':'grid';
+  $('#submissionLoginBox').style.gap='12px';
+  $('#submitStudentWork').disabled=!loggedIn||!window.pendingSurveyPdf;
+}
+$('#submitStudentWork').onclick=async()=>{
+  const button=$('#submitStudentWork');
+  const student=$('#submissionStudent').value;
+  if(!CLASSROOM_STUDENTS.includes(student)){
+    $('#submissionStatus').textContent='Please choose your initials.';
+    return;
+  }
+  const token=validSubmissionToken();
+  if(!token){
     sessionStorage.removeItem('mrscottSubmissionToken');
     sessionStorage.removeItem('mrscottSubmissionLoginAt');
-    $('#submissionStatus').textContent='Please use Test Password Login first. Sessions expire after two hours.';
+    refreshSubmissionLogin();
+    $('#submissionStatus').textContent='Your session expired. Enter the classroom password again.';
     return;
   }
   const pdf=window.pendingSurveyPdf;
@@ -331,29 +251,25 @@ $('#submitStudentWork').onclick=async()=>{
   button.disabled=true;
   try{
     const result=await sendSubmissionRequest({
-      action:'submit',token,student:'Test Student',
-      activity:'Survey and Graph Test',pdfBase64:pdf
-    },'mrscott-submit-result','Sending test PDF to Google Drive…');
+      action:'submit',token,student,activity:'Survey and Graph',pdfBase64:pdf
+    },'mrscott-submit-result','Sending your graph to your teacher…');
     if(result.success){
       window.pendingSurveyPdf=null;
-      $('#submissionStatus').textContent='Test PDF saved to Google Drive! Filename: '+String(result.filename||'PDF saved');
-      button.disabled=true;
+      $('#submissionStatus').textContent='Your work was sent successfully!';
     }else{
-      $('#submissionStatus').textContent='Google Drive did not save the PDF: '+String(result.message||'Unknown error');
+      $('#submissionStatus').textContent='Could not save your work: '+String(result.message||'Unknown error');
       if(/session expired/i.test(String(result.message||''))){
         sessionStorage.removeItem('mrscottSubmissionToken');
         sessionStorage.removeItem('mrscottSubmissionLoginAt');
+        refreshSubmissionLogin();
       }
     }
   }catch(error){
-    $('#submissionStatus').textContent='No upload confirmation received: '+error.message+' Check the Test Student folder before trying again to avoid duplicates.';
+    $('#submissionStatus').textContent='No confirmation received. Please ask your teacher to check Google Drive before trying again.';
   }finally{
     if(window.pendingSurveyPdf)button.disabled=false;
   }
 };
-// Actual student uploads are not enabled; only the synthetic Test Student is allowed.
-// The upload button remains disabled until a verified authenticated
-// server-side endpoint is available. Never put a shared secret in public code.
 $('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
 try{let old=JSON.parse(localStorage.getItem('surveyGraphApp'));if(old&&old.options&&old.options.length){Object.assign(state,old);$('#question').value=state.question;$('#options').value=state.options.join('\n');renderTallies();show('collect',1)}}catch(e){}
 </script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script></body></html>
