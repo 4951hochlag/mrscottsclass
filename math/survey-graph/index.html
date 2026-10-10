@@ -2,13 +2,28 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Survey & Graph | Mr. Scott's Class</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:#172033}.app{width:min(1050px,94%);margin:auto;padding:18px 0 42px}header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}h1{margin:0;font-size:clamp(1.8rem,5vw,2.7rem)}h2{margin:0 0 14px}.sub{color:#647086}.btn{border:0;border-radius:12px;padding:12px 17px;font-size:1rem;font-weight:800;cursor:pointer;min-height:46px}.primary{background:#2563eb;color:white}.secondary{background:#e8eef7;color:#172033}.danger{background:#feecec;color:#9b2424}.panel{background:white;border:1px solid #dde5ef;border-radius:20px;padding:22px;margin-bottom:18px}.screen{display:none}.screen.active{display:block}.field{margin:14px 0}.field label{display:block;font-weight:800;margin-bottom:6px}input,textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:2px solid #cbd7e7;border-radius:11px}textarea{min-height:110px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 20px}.step{text-align:center;background:#e8eef7;border-radius:12px;padding:10px;font-weight:800}.step.on{background:#2563eb;color:white}.tally-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.tally-card{border:2px solid #dce5f0;border-radius:18px;padding:17px;text-align:center}.tally-card h3{font-size:1.25rem;margin:0 0 10px}.marks{min-height:58px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}.tally-group{position:relative;display:inline-flex;gap:6px;height:42px;align-items:center}.tally-mark{display:block;width:3px;height:38px;background:#172033;border-radius:2px}.tally-group.five::after{content:'';position:absolute;left:-3px;top:19px;width:42px;height:3px;background:#172033;border-radius:2px;transform:rotate(-38deg);transform-origin:center}.count{font-size:1.15rem;font-weight:900;margin:7px}.controls{display:flex;justify-content:center;gap:10px}.plus{font-size:1.15rem}.total{text-align:center;font-size:1.3rem;font-weight:900;margin:18px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}.graph-title{text-align:center;margin:8px 48px 14px 86px;font-size:1.25rem;font-weight:900}.graph-title input{text-align:center;font-weight:800}.graph-body{display:grid;grid-template-columns:44px 48px minmax(520px,1fr);min-width:612px;align-items:stretch}.yslot{display:flex;align-items:center;justify-content:center;font-weight:850}.yslot span{writing-mode:vertical-rl;transform:rotate(180deg)}.yslot input{width:42px;height:250px;padding:7px;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-weight:800}.yaxis{display:grid;text-align:right;padding-right:7px;font-weight:700;color:#536278}.plot{display:grid;align-items:end;height:var(--gh);border-left:3px solid #172033;border-bottom:3px solid #172033;background:repeating-linear-gradient(to top,transparent 0,transparent calc(var(--rh) - 1px),#cfdae8 calc(var(--rh) - 1px),#cfdae8 var(--rh));padding:0 7px}.barcol{height:100%;display:flex;flex-direction:column-reverse;padding:0 4px}.cell{height:var(--rh);min-height:15px;border:1px solid #aebfd4;background:#fff;cursor:pointer}.cell.on{background:#3b82f6}.cell.correct{background:#168653}.cell.wrong{outline:3px solid #f59e0b;outline-offset:-3px}.xlabels{display:grid;margin-left:92px;min-width:520px;padding:8px 7px;font-weight:800;text-align:center}.xslot{text-align:center;margin-left:92px;min-width:520px;font-weight:850}.xslot input{max-width:500px;text-align:center;font-weight:800}.scroll{overflow-x:auto;padding:5px}.feedback{text-align:center;font-weight:800;margin:15px}.classlog{margin-top:18px;border-top:1px solid #dde5ef;padding-top:14px}.logrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0}.success-pop{position:fixed;inset:0;background:#17203388;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.success-box{width:min(620px,94vw);background:#dff8e5;border:5px solid #16a34a;border-radius:26px;padding:28px;text-align:center;color:#075d2c;box-shadow:0 18px 60px #0004}.success-check{width:92px;height:92px;border-radius:50%;background:#16a34a;color:#fff;display:grid;place-items:center;margin:0 auto 14px;font-size:3.8rem;font-weight:900}.success-box h2{font-size:clamp(2rem,7vw,3.2rem);margin:8px 0}.success-box p{font-size:clamp(1.2rem,4vw,1.7rem);font-weight:800;margin:10px 0 24px}.success-box .btn{background:#16a34a;color:white;min-width:180px;font-size:1.25rem}.hidden{display:none!important}.finish{text-align:center}.finish .big{font-size:4rem}.hint{color:#647086;font-size:.94rem}@media(max-width:650px){.app{width:96%}.panel{padding:15px}.steps{font-size:.85rem}.graph-title{margin-left:70px}.graph-body{grid-template-columns:36px 40px minmax(500px,1fr);min-width:576px}.xlabels,.xslot{margin-left:76px;min-width:500px}}
-#printSheet{display:none}@media print{body>*:not(#printSheet){display:none!important}#printSheet{display:block!important;color:#111;background:#fff;padding:12px 18px;font-family:Arial,sans-serif}#printSheet h1{text-align:center;margin:0 0 6px}#printSheet h2{text-align:center;margin:8px 0}#printSheet h3{margin:14px 0 6px}#printSheet table{width:100%;border-collapse:collapse;margin:6px 0 14px}#printSheet th,#printSheet td{border:1px solid #777;padding:7px;text-align:left}#printSheet .tally-group{display:inline-flex;position:relative;gap:4px;height:28px;margin-right:9px;vertical-align:middle}#printSheet .tally-mark{width:2px;height:26px;background:#111}#printSheet .tally-group.five:after{width:29px;top:12px;height:2px;background:#111}.printGraphHolder{break-inside:avoid;margin:18px auto 0;width:100%;overflow:visible}#printGraphClone{width:100%;--gh:300px!important}#printGraphClone .graph-title{margin:8px 48px 14px 86px;border:2px solid #cbd7e7;border-radius:11px;padding:12px;text-align:center;font-weight:800}#printGraphClone .graph-body{grid-template-columns:44px 48px minmax(0,1fr);min-width:0;height:300px}#printGraphClone .yslot{height:300px;border:2px solid #cbd7e7;border-radius:11px}#printGraphClone .y-label-value{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;text-align:center}#printGraphClone .yaxis{height:300px;display:grid!important;padding-right:7px}#printGraphClone .plot{box-sizing:content-box;height:300px!important;min-width:0;padding:0 7px;-webkit-print-color-adjust:exact;print-color-adjust:exact}#printGraphClone .barcol{height:100%;display:flex;flex-direction:column-reverse;padding:0 4px}#printGraphClone .cell{padding:0;display:block!important;width:100%;flex:0 0 var(--rh);height:var(--rh)!important;min-height:0!important;border:1px solid #aebfd4;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#printGraphClone .cell.on{background:#3b82f6!important}#printGraphClone .xlabels{margin-left:92px;min-width:0;padding:8px 7px;font-weight:800;text-align:center}#printGraphClone .xslot{margin-left:92px;min-width:0;text-align:center}#printGraphClone .x-label-value{display:inline-block;width:min(500px,70%);border:2px solid #cbd7e7;border-radius:11px;padding:12px;font-weight:800;text-align:center}.print-input{font:inherit}} dialog.data-popup{width:min(680px,94vw);max-height:85vh;overflow:auto;border:2px solid #cbd7e7;border-radius:20px;padding:22px;color:#172033}dialog.data-popup::backdrop{background:#17203388}.data-popup table{width:100%;border-collapse:collapse;margin:16px 0}.data-popup th,.data-popup td{border:1px solid #cbd7e7;padding:12px;text-align:left}.data-popup th{background:#e8eef7}.data-popup .marks{justify-content:flex-start}.data-popup tfoot{font-weight:800}</style></head><body><main class="app"><header><div><h1>Survey &amp; Graph</h1><div class="sub">Collect real data, then build a graph.</div></div><a class="btn secondary" href="../">← Math</a></header>
+#printSheet{display:none}@media print{body>*:not(#printSheet){display:none!important}#printSheet{display:block!important;color:#111;background:#fff;padding:12px 18px;font-family:Arial,sans-serif}#printSheet h1{text-align:center;margin:0 0 6px}#printSheet h2{text-align:center;margin:8px 0}#printSheet h3{margin:14px 0 6px}#printSheet table{width:100%;border-collapse:collapse;margin:6px 0 14px}#printSheet th,#printSheet td{border:1px solid #777;padding:7px;text-align:left}#printSheet .tally-group{display:inline-flex;position:relative;gap:4px;height:28px;margin-right:9px;vertical-align:middle}#printSheet .tally-mark{width:2px;height:26px;background:#111}#printSheet .tally-group.five:after{width:29px;top:12px;height:2px;background:#111}.printGraphHolder{break-inside:avoid;margin:18px auto 0;width:100%;overflow:visible}#printGraphClone{width:100%;--gh:300px!important}#printGraphClone .graph-title{margin:8px 48px 14px 86px;border:2px solid #cbd7e7;border-radius:11px;padding:12px;text-align:center;font-weight:800}#printGraphClone .graph-body{grid-template-columns:44px 48px minmax(0,1fr);min-width:0;height:300px}#printGraphClone .yslot{height:300px;border:2px solid #cbd7e7;border-radius:11px}#printGraphClone .y-label-value{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;text-align:center}#printGraphClone .yaxis{height:300px;display:grid!important;padding-right:7px}#printGraphClone .plot{box-sizing:content-box;height:300px!important;min-width:0;padding:0 7px;-webkit-print-color-adjust:exact;print-color-adjust:exact}#printGraphClone .barcol{height:100%;display:flex;flex-direction:column-reverse;padding:0 4px}#printGraphClone .cell{padding:0;display:block!important;width:100%;flex:0 0 var(--rh);height:var(--rh)!important;min-height:0!important;border:1px solid #aebfd4;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#printGraphClone .cell.on{background:#3b82f6!important}#printGraphClone .xlabels{margin-left:92px;min-width:0;padding:8px 7px;font-weight:800;text-align:center}#printGraphClone .xslot{margin-left:92px;min-width:0;text-align:center}#printGraphClone .x-label-value{display:inline-block;width:min(500px,70%);border:2px solid #cbd7e7;border-radius:11px;padding:12px;font-weight:800;text-align:center}.print-input{font:inherit}} dialog.data-popup{width:min(680px,94vw);max-height:85vh;overflow:auto;border:2px solid #cbd7e7;border-radius:20px;padding:22px;color:#172033}dialog.data-popup::backdrop{background:#17203388}.data-popup table{width:100%;border-collapse:collapse;margin:16px 0}.data-popup th,.data-popup td{border:1px solid #cbd7e7;padding:12px;text-align:left}.data-popup th{background:#e8eef7}.data-popup .marks{justify-content:flex-start}.data-popup tfoot{font-weight:800}</style></head><body><main class="app"><header><div><h1>Survey &amp; Graph</h1><div class="sub">Collect real data, then build a graph.</div></div><a class="btn secondary" href="../../math/">← Math</a></header>
 <div class="steps"><div class="step on" id="s1">1. Collect Data</div><div class="step" id="s2">2. Make a Graph</div><div class="step" id="s3">3. Finished</div></div>
 <section class="screen active" id="setup"><div class="panel"><h2>Set up your survey</h2><div class="field"><label for="question">Survey question</label><input id="question" placeholder="e.g., What is your favourite season?"></div><div class="field"><label for="options">Answer choices — one per line</label><textarea id="options" placeholder="Winter&#10;Spring&#10;Summer&#10;Fall"></textarea></div><div class="field"><label for="group">First class or group <span class="hint">(optional)</span></label><input id="group" placeholder="e.g., Room 101"></div><div class="actions"><button class="btn primary" id="start">Start Collecting</button></div></div></section>
 <section class="screen" id="collect"><div class="panel"><h2 id="qdisplay"></h2><div class="sub" id="groupDisplay"></div><div class="tally-grid" id="tallies"></div><div class="total">Total surveyed: <span id="total">0</span></div><div class="actions"><button class="btn secondary" id="nextClass">Next Class / Group</button><button class="btn danger" id="endSurvey">End Survey / Start New</button><button class="btn primary" id="toGraph">Make My Graph →</button></div><div class="classlog hidden" id="classlog"><strong>Groups surveyed</strong><div id="logs"></div></div></div></section>
 <section class="screen" id="graph"><div class="panel"><h2>Make a Bar Graph</h2><p class="sub">Use your tally totals to build each bar. Tap the blocks to set the height.</p><div class="actions"><button type="button" class="btn primary" id="showData" aria-haspopup="dialog" aria-controls="dataPopup">Show Data</button></div><div class="scroll" id="graphArea"></div><div class="feedback" id="feedback"></div><div class="actions"><button class="btn secondary" id="back">← Tallies</button><button class="btn danger" id="startNewSurvey">Start New Survey</button><button class="btn danger" id="clear">Clear Graph</button><button class="btn primary" id="check">Check My Graph</button><button class="btn primary hidden" id="finish">Finish →</button></div></div></section>
-<div class="success-pop hidden" id="successPop" role="dialog" aria-modal="true" aria-labelledby="successTitle"><div class="success-box"><div class="success-check">✓</div><h2 id="successTitle">Great work!</h2><p>Every bar matches your tally data.</p><button class="btn" id="successOK">OK</button></div></div><section class="screen" id="done"><div class="panel finish"><div class="big">✓</div><h2>Survey Complete!</h2><p>You collected real data and turned it into a bar graph.</p><div id="summary"></div><div class="actions"><button class="btn secondary" id="backGraph">← View Graph</button><button class="btn primary" id="savePDF">Save My Work as PDF</button><button class="btn primary" id="newSurvey">New Survey</button></div></div></section>
-</main><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
+<div class="success-pop hidden" id="successPop" role="dialog" aria-modal="true" aria-labelledby="successTitle"><div class="success-box"><div class="success-check">✓</div><h2 id="successTitle">Great work!</h2><p>Every bar matches your tally data.</p><button class="btn" id="successOK">OK</button></div></div><section class="screen" id="done"><div class="panel finish"><div class="big">✓</div><h2>Survey Complete!</h2><p>You collected real data and turned it into a bar graph.</p><div id="summary"></div><div class="actions"><button class="btn secondary" id="backGraph">← View Graph</button><button class="btn primary" id="sendTeacher">Send to Teacher</button><button class="btn primary" id="savePDF">Save My Work as PDF</button><button class="btn primary" id="newSurvey">New Survey</button></div></div></section>
+</main><dialog id="submitDialog" class="data-popup" aria-labelledby="sendTeacherTitle">
+<h2 id="sendTeacherTitle">Send to Teacher</h2>
+<p id="submissionStatus" role="status" aria-live="polite">Preparing your completed graph…</p>
+<div style="display:grid;gap:12px;max-width:400px;margin:18px auto;text-align:left">
+<label for="submissionStudent">Student initials</label>
+<select id="submissionStudent" style="padding:12px;width:100%"><option value="">Choose your initials</option><option value="A.D.">A.D.</option><option value="A.D.A.">A.D.A.</option><option value="G.A.">G.A.</option><option value="E.P.">E.P.</option><option value="G.M.">G.M.</option><option value="V.P.">V.P.</option><option value="M.F.">M.F.</option><option value="L.T.">L.T.</option></select>
+<div id="submissionLoginBox">
+<label for="submissionPassword">Classroom password</label>
+<input id="submissionPassword" type="password" autocomplete="off" placeholder="Classroom password" style="padding:12px;width:100%">
+<small>Enter the classroom password once per browser session.</small>
+<button id="studentLogin" class="btn secondary" type="button">Unlock Sending</button>
+</div>
+<button id="submitStudentWork" class="btn primary" type="button" disabled>Send My Work</button>
+</div>
+<div class="actions"><button class="btn secondary" type="button" onclick="document.getElementById('submitDialog').close()">Close</button></div>
+</dialog><dialog class="data-popup" id="dataPopup" aria-labelledby="dataTitle"><h2 id="dataTitle">Collected Data</h2><p id="dataQuestion"></p><table><thead><tr><th scope="col">Answer</th><th scope="col">Tally</th><th scope="col">Total</th></tr></thead><tbody id="dataRows"></tbody><tfoot><tr><th scope="row" colspan="2">Total surveyed</th><td id="dataTotal"></td></tr></tfoot></table><form method="dialog" class="actions"><button class="btn primary">Close</button></form></dialog><script>
 const $=s=>document.querySelector(s), state={question:'',options:[],counts:{},groups:[],group:'',groupStart:{},bars:{},title:'',x:'',y:''};
 function save(){try{localStorage.setItem('surveyGraphApp',JSON.stringify(state))}catch(e){}}
 function show(id,step){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');document.querySelectorAll('.step').forEach(x=>x.classList.remove('on'));$('#s'+step).classList.add('on');scrollTo({top:0,behavior:'smooth'})}
@@ -25,8 +40,236 @@ function capture(){if($('#gt'))state.title=$('#gt').value;if($('#gx'))state.x=$(
 function showData(){capture();$('#dataQuestion').textContent=state.question;$('#dataRows').innerHTML=state.options.map(o=>'<tr><th scope="row">'+esc(o)+'</th><td><div class="marks" aria-label="'+state.counts[o]+' tally marks">'+marks(state.counts[o])+'</div></td><td>'+state.counts[o]+'</td></tr>').join('');$('#dataTotal').textContent=state.options.reduce((sum,o)=>sum+state.counts[o],0);$('#dataPopup').showModal()}
 $('#showData').onclick=showData;
 $('#dataPopup').addEventListener('click',event=>{if(event.target===$('#dataPopup')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)event.target.close()}});
-function printWork(){capture();let old=document.getElementById('printSheet');if(old)old.remove();let source=$('#graphArea').cloneNode(true);source.id='printGraphClone';let printMax=Math.max(5,...Object.values(state.counts));source.style.setProperty('--rh',(300/printMax)+'px');source.querySelectorAll('input').forEach(input=>{let span=document.createElement('span');span.className=input.id==='gt'?'print-input graph-title-value':input.id==='gy'?'print-input y-label-value':'print-input x-label-value';span.textContent=input.value;input.replaceWith(span)});source.querySelectorAll('button.cell').forEach(cell=>{let d=document.createElement('div');d.className=cell.className;cell.replaceWith(d)});let groups=state.groups.length?'<h2>Groups Surveyed</h2><table><tr><th>Group</th><th>Responses</th></tr>'+state.groups.map(g=>'<tr><td>'+esc(g.name)+'</td><td>'+g.total+'</td></tr>').join('')+'</table>':'',trows=state.options.map(o=>'<tr><td>'+esc(o)+'</td><td class="ptally">'+marks(state.counts[o])+'</td><td>'+state.counts[o]+'</td></tr>').join('');let sheet=document.createElement('section');sheet.id='printSheet';sheet.innerHTML='<h1>Survey &amp; Graph</h1><h2>'+esc(state.question)+'</h2><h3>Collected Data</h3><table><tr><th>Answer</th><th>Tally</th><th>Total</th></tr>'+trows+'</table>'+groups+'<div class="printGraphHolder"></div>';sheet.querySelector('.printGraphHolder').appendChild(source);document.body.appendChild(sheet);window.print();setTimeout(()=>sheet.remove(),1000)}
+function printWork(keepForCapture=false){capture();let old=document.getElementById('printSheet');if(old)old.remove();let source=$('#graphArea').cloneNode(true);source.id='printGraphClone';let printMax=Math.max(5,...Object.values(state.counts));source.style.setProperty('--rh',(300/printMax)+'px');source.querySelectorAll('input').forEach(input=>{let span=document.createElement('span');span.className=input.id==='gt'?'print-input graph-title-value':input.id==='gy'?'print-input y-label-value':'print-input x-label-value';span.textContent=input.value;input.replaceWith(span)});source.querySelectorAll('button.cell').forEach(cell=>{let d=document.createElement('div');d.className=cell.className;cell.replaceWith(d)});let groups=state.groups.length?'<h2>Groups Surveyed</h2><table><tr><th>Group</th><th>Responses</th></tr>'+state.groups.map(g=>'<tr><td>'+esc(g.name)+'</td><td>'+g.total+'</td></tr>').join('')+'</table>':'',trows=state.options.map(o=>'<tr><td>'+esc(o)+'</td><td class="ptally">'+marks(state.counts[o])+'</td><td>'+state.counts[o]+'</td></tr>').join('');let sheet=document.createElement('section');sheet.id='printSheet';sheet.innerHTML='<h1>Survey &amp; Graph</h1><h2>'+esc(state.question)+'</h2><h3>Collected Data</h3><table><tr><th>Answer</th><th>Tally</th><th>Total</th></tr>'+trows+'</table>'+groups+'<div class="printGraphHolder"></div>';sheet.querySelector('.printGraphHolder').appendChild(source);document.body.appendChild(sheet);if(!keepForCapture){window.print();setTimeout(()=>sheet.remove(),1000)}}
 function resetSurvey(){if(!confirm('Start a new survey? Your current work will be cleared.'))return;localStorage.removeItem('surveyGraphApp');location.reload()}
-$('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').onclick=nextGroup;$('#toGraph').onclick=()=>{if(state.group||Object.values(state.counts).some((v,i)=>v!==(state.groupStart[state.options[i]]||0)))closeGroup();state.group='';state.groupStart={...state.counts};graph();show('graph',2)};$('#back').onclick=()=>{capture();renderTallies();show('collect',1)};$('#clear').onclick=()=>{state.bars=Object.fromEntries(state.options.map(o=>[o,0]));$('#feedback').textContent='';$('#finish').classList.add('hidden');graph()};$('#check').onclick=()=>{capture();if(!state.title.trim()||!state.x.trim()||!state.y.trim()){alert('Complete the graph title and both axis labels.');return}let ok=state.options.every(o=>state.bars[o]===state.counts[o]);$('#feedback').textContent=ok?'':'Almost there. Check your bar heights against your tally totals.';$('#finish').classList.toggle('hidden',!ok);if(ok)$('#successPop').classList.remove('hidden');save()};$('#successOK').onclick=()=>{$('#successPop').classList.add('hidden');$('#finish').focus()};$('#finish').onclick=()=>{$('#summary').innerHTML='<p><strong>'+esc(state.question)+'</strong></p>'+state.options.map(o=>'<div>'+esc(o)+': <strong>'+state.counts[o]+'</strong></div>').join('');show('done',3)};$('#backGraph').onclick=()=>{graph();show('graph',2)};$('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
+$('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').onclick=nextGroup;$('#toGraph').onclick=()=>{if(state.group||Object.values(state.counts).some((v,i)=>v!==(state.groupStart[state.options[i]]||0)))closeGroup();state.group='';state.groupStart={...state.counts};graph();show('graph',2)};$('#back').onclick=()=>{capture();renderTallies();show('collect',1)};$('#clear').onclick=()=>{state.bars=Object.fromEntries(state.options.map(o=>[o,0]));$('#feedback').textContent='';$('#finish').classList.add('hidden');graph()};$('#check').onclick=()=>{capture();if(!state.title.trim()||!state.x.trim()||!state.y.trim()){alert('Complete the graph title and both axis labels.');return}let ok=state.options.every(o=>state.bars[o]===state.counts[o]);$('#feedback').textContent=ok?'':'Almost there. Check your bar heights against your tally totals.';$('#finish').classList.toggle('hidden',!ok);if(ok)$('#successPop').classList.remove('hidden');save()};$('#successOK').onclick=()=>{$('#successPop').classList.add('hidden');$('#finish').focus()};$('#finish').onclick=()=>{$('#summary').innerHTML='<p><strong>'+esc(state.question)+'</strong></p>'+state.options.map(o=>'<div>'+esc(o)+': <strong>'+state.counts[o]+'</strong></div>').join('');show('done',3)};$('#backGraph').onclick=()=>{graph();show('graph',2)};async function ensurePdfTools(){
+  async function loadOne(test, urls, label){
+    if(test()) return;
+    for(const url of urls){
+      try{
+        await new Promise((resolve,reject)=>{
+          const script=document.createElement('script');
+          const timeout=setTimeout(()=>{script.remove();reject(Error('Timeout'));},9000);
+          script.onload=()=>{clearTimeout(timeout);resolve();};
+          script.onerror=()=>{clearTimeout(timeout);script.remove();reject(Error('Blocked'));};
+          script.src=url;
+          document.head.appendChild(script);
+        });
+        if(test()) return;
+      }catch(e){}
+    }
+    throw Error(label+' could not load. A school network filter or browser extension may be blocking PDF libraries.');
+  }
+  await loadOne(()=>typeof window.html2canvas==='function',[
+    'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  ],'Graph capture library');
+  await loadOne(()=>!!window.jspdf?.jsPDF,[
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
+  ],'PDF creation library');
+}
+$('#sendTeacher').onclick=async()=> {
+  const btn=$('#sendTeacher');
+  btn.disabled=true;
+  btn.textContent='Preparing PDF…';
+  let sheet;
+  try {
+    await ensurePdfTools();
+    capture();
+    // Build the same printable graph without invoking the browser print dialog.
+    printWork(true);
+    sheet=document.getElementById('printSheet');
+    if(!sheet) throw Error('Could not prepare the printable graph.');
+    // Print stylesheet hides the sheet on screen. Give the temporary capture
+    // its own off-screen layout without changing the visible activity.
+    sheet.style.cssText='display:block!important;position:fixed;left:0;top:0;width:790px;padding:18px;background:white;color:#111;z-index:-1;visibility:visible;transform:translateX(-200vw);';
+    // Print-only rules do not apply during html2canvas capture. Supply the
+    // equivalent styles explicitly in the capture clone.
+    const captureStyles=document.createElement('style');
+    captureStyles.textContent=`#printSheet{font-family:Arial,sans-serif}#printSheet h1,#printSheet h2{text-align:center}#printSheet table{width:100%;border-collapse:collapse;margin:8px 0 14px}#printSheet th,#printSheet td{border:1px solid #777;padding:7px;text-align:left}#printSheet .printGraphHolder{margin:18px auto 0;width:100%}#printGraphClone{width:100%;--gh:300px!important}#printGraphClone .graph-body{grid-template-columns:44px 48px minmax(0,1fr);min-width:0;height:300px}#printGraphClone .yaxis{height:300px;display:grid!important}#printGraphClone .plot{box-sizing:content-box;height:300px!important;min-width:0;padding:0 7px}#printGraphClone .barcol{height:100%;display:flex;flex-direction:column-reverse;padding:0 4px}#printGraphClone .cell{display:block!important;flex:0 0 var(--rh);height:var(--rh)!important;min-height:0!important;background:#fff}#printGraphClone .cell.on{background:#3b82f6!important}#printGraphClone .xlabels,#printGraphClone .xslot{min-width:0}#printGraphClone .y-label-value{writing-mode:vertical-rl;transform:rotate(180deg)}`;
+    sheet.prepend(captureStyles);
+    const graph=sheet.querySelector('#printGraphClone');
+    if(graph) {
+      // html2canvas does not consistently reproduce vertical writing-mode
+      // combined with CSS rotation. Rasterize only the y-axis label with a
+      // native canvas so the PDF always reads bottom-to-top.
+      const yLabel=graph.querySelector('.y-label-value');
+      if(yLabel){
+        // Use an image with its orientation baked into the SVG. This avoids
+        // html2canvas misrendering writing-mode, transforms and nested canvases.
+        const labelText=yLabel.textContent||'';
+        const escaped=labelText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+        const svg='<svg xmlns="http://www.w3.org/2000/svg" width="42" height="300" viewBox="0 0 42 300">'+
+          '<rect width="42" height="300" fill="#fff"/>'+
+          '<text x="0" y="0" transform="translate(21 150) rotate(-90)" fill="#172033" font-family="Arial,sans-serif" font-size="16" font-weight="800" text-anchor="middle" dominant-baseline="middle" textLength="'+Math.min(260,Math.max(1,labelText.length*9))+'" lengthAdjust="spacingAndGlyphs">'+escaped+'</text></svg>';
+        const img=document.createElement('img');
+        img.alt=labelText;
+        img.width=42;img.height=300;
+        img.style.cssText='display:block;width:42px;height:300px;min-width:42px;max-width:42px;object-fit:contain;transform:none;writing-mode:horizontal-tb;margin:auto';
+        img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+        yLabel.replaceWith(img);
+        await new Promise((resolve,reject)=>{
+          if(img.complete){resolve();return;}
+          img.onload=resolve;
+          img.onerror=()=>reject(new Error('Y-axis label image could not load.'));
+        });
+      }
+      graph.style.setProperty('--gh','300px');
+      graph.style.setProperty('--rh',(300/Math.max(5,...Object.values(state.counts)))+'px');
+    }
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale:1.25,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const w=190;
+    const pageHeight=277;
+    // Slice the canvas to avoid losing content on long reports.
+    const sliceHeight=Math.floor(canvas.width*pageHeight/w);
+    for(let top=0,page=0;top<canvas.height;top+=sliceHeight,page++){
+      if(page) pdf.addPage();
+      const slice=document.createElement('canvas');
+      slice.width=canvas.width;
+      slice.height=Math.min(sliceHeight,canvas.height-top);
+      slice.getContext('2d').drawImage(canvas,0,top,canvas.width,slice.height,0,0,slice.width,slice.height);
+      pdf.addImage(slice.toDataURL('image/jpeg',0.72),'JPEG',10,10,w,slice.height*w/slice.width,undefined,'FAST');
+    }
+    const data=pdf.output('datauristring');
+    if(data.length>6.5*1024*1024) throw Error('PDF is still over the 5 MB upload limit. Try a shorter survey.');
+    // Keep the generated PDF only in memory for this test, not in persistent storage.
+    window.pendingSurveyPdf=data.split(',')[1];
+    const dialog=document.getElementById('submitDialog');
+    $('#submissionStudent').value='';
+    $('#submissionPassword').value='';
+    $('#submissionStatus').textContent='Your PDF is ready. Choose your initials and send it to your teacher.';
+    refreshSubmissionLogin();
+    dialog.showModal();
+  } catch(err) {
+    alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
+  } finally {
+    if(sheet) sheet.remove();
+    btn.disabled=false;
+    btn.textContent='Send to Teacher';
+  }
+};
+// Login-only integration test. Never send a PDF until authenticated uploads
+// have been tested separately. Tokens remain in tab-scoped sessionStorage.
+const STUDENT_SUBMISSION_URL='https://script.google.com/macros/s/AKfycbzPmBdDMatCWREnwl0yLK8rwIM6sLdflmPjLw6rftyf-Kjt1ihtD3H0-tE3yT-F_2rr/exec';
+function sendSubmissionRequest(fields, expectedType, statusMessage) {
+  return new Promise((resolve,reject)=>{
+    const nonce=crypto.randomUUID();
+    const frame=document.createElement('iframe');
+    frame.name='studentWorkFrame_'+nonce.replace(/-/g,'');
+    frame.title='Student work connection';
+    frame.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+    const form=document.createElement('form');
+    form.method='POST';form.action=STUDENT_SUBMISSION_URL;form.target=frame.name;
+    for(const [name,value] of Object.entries({...fields,nonce})){
+      const field=document.createElement('input');
+      field.type='hidden';field.name=name;field.value=String(value);
+      form.appendChild(field);
+    }
+    let settled=false;
+    const cleanup=()=>{window.removeEventListener('message',receive);clearTimeout(timeout);form.remove();frame.remove();};
+    const finish=(error,result)=>{if(settled)return;settled=true;cleanup();if(error)reject(error);else resolve(result);};
+    const receive=(event)=>{
+      // Apps Script may send from a nested Google-hosted frame rather than the
+      // immediate iframe. Accept only trusted Google origins plus the unique
+      // one-time request nonce and expected response type below.
+      if(!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/.test(event.origin))return;
+      if(!event.data||event.data.type!==expectedType||event.data.nonce!==nonce)return;
+      finish(null,event.data);
+    };
+    window.addEventListener('message',receive);
+    const timeout=setTimeout(()=>finish(new Error('No response received after 20 seconds. Try Incognito if Google blocks this browser profile.')),20000);
+    document.body.appendChild(frame);document.body.appendChild(form);
+    $('#submissionStatus').textContent=statusMessage;
+    form.submit();
+  });
+}
+$('#studentLogin').onclick=async()=>{
+  const button=$('#studentLogin');
+  const password=$('#submissionPassword').value;
+  if(!password){$('#submissionStatus').textContent='Enter the classroom password first.';return;}
+  button.disabled=true;
+  try{
+    const result=await sendSubmissionRequest({action:'login',password},'mrscott-login-result','Checking classroom password…');
+    $('#submissionPassword').value='';
+    if(result.success&&typeof result.token==='string'&&result.token.length>20){
+      sessionStorage.setItem('mrscottSubmissionToken',result.token);
+      sessionStorage.setItem('mrscottSubmissionLoginAt',String(Date.now()));
+      $('#submissionStatus').textContent='Classroom unlocked. Choose your initials and send your work.';
+      refreshSubmissionLogin();
+    }else{
+      sessionStorage.removeItem('mrscottSubmissionToken');
+      sessionStorage.removeItem('mrscottSubmissionLoginAt');
+      $('#submissionStatus').textContent='Login unsuccessful: '+String(result.message||'Please check the password.');
+    }
+  }catch(error){
+    $('#submissionPassword').value='';
+    $('#submissionStatus').textContent='Could not verify login: '+error.message;
+  }finally{button.disabled=false;}
+};
+const CLASSROOM_STUDENTS=['A.D.','A.D.A.','G.A.','E.P.','G.M.','V.P.','M.F.','L.T.'];
+function validSubmissionToken(){
+  const token=sessionStorage.getItem('mrscottSubmissionToken');
+  const loggedAt=Number(sessionStorage.getItem('mrscottSubmissionLoginAt')||0);
+  return token&&loggedAt&&Date.now()-loggedAt<2*60*60*1000?token:null;
+}
+function refreshSubmissionLogin(){
+  const loggedIn=!!validSubmissionToken();
+  $('#submissionLoginBox').style.display=loggedIn?'none':'grid';
+  $('#submissionLoginBox').style.gap='12px';
+  $('#submitStudentWork').disabled=!loggedIn||!window.pendingSurveyPdf;
+}
+$('#submitStudentWork').onclick=async()=>{
+  const button=$('#submitStudentWork');
+  const student=$('#submissionStudent').value;
+  if(!CLASSROOM_STUDENTS.includes(student)){
+    $('#submissionStatus').textContent='Please choose your initials.';
+    return;
+  }
+  const token=validSubmissionToken();
+  if(!token){
+    sessionStorage.removeItem('mrscottSubmissionToken');
+    sessionStorage.removeItem('mrscottSubmissionLoginAt');
+    refreshSubmissionLogin();
+    $('#submissionStatus').textContent='Your session expired. Enter the classroom password again.';
+    return;
+  }
+  const pdf=window.pendingSurveyPdf;
+  if(typeof pdf!=='string'||!pdf.startsWith('JVBER')){
+    $('#submissionStatus').textContent='PDF not ready. Close this window and click Send to Teacher again.';
+    return;
+  }
+  if(pdf.length>Math.ceil(5*1024*1024*4/3)+100){
+    $('#submissionStatus').textContent='PDF exceeds the server upload limit.';
+    return;
+  }
+  button.disabled=true;
+  try{
+    const result=await sendSubmissionRequest({
+      action:'submit',token,student,activity:'Survey and Graph',pdfBase64:pdf
+    },'mrscott-submit-result','Sending your graph to your teacher…');
+    if(result.success){
+      window.pendingSurveyPdf=null;
+      $('#submissionStatus').textContent='Your work was sent successfully!';
+    }else{
+      $('#submissionStatus').textContent='Could not save your work: '+String(result.message||'Unknown error');
+      if(/session expired/i.test(String(result.message||''))){
+        sessionStorage.removeItem('mrscottSubmissionToken');
+        sessionStorage.removeItem('mrscottSubmissionLoginAt');
+        refreshSubmissionLogin();
+      }
+    }
+  }catch(error){
+    $('#submissionStatus').textContent='No confirmation received. Please ask your teacher to check Google Drive before trying again.';
+  }finally{
+    if(window.pendingSurveyPdf)button.disabled=false;
+  }
+};
+$('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
 try{let old=JSON.parse(localStorage.getItem('surveyGraphApp'));if(old&&old.options&&old.options.length){Object.assign(state,old);$('#question').value=state.question;$('#options').value=state.options.join('\n');renderTallies();show('collect',1)}}catch(e){}
-</script></body></html>
+</script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script></body></html>
