@@ -98,7 +98,7 @@ function mount(options){
     dialog.showModal();refresh();
     try{
       const output=await options.getPdfBase64();
-      pdf=typeof output==='string'?output.replace(/^data:application\/pdf;base64,/i,''):null;
+      pdf=typeof output==='string'?(output.startsWith('data:application/pdf')?output.substring(output.indexOf(',')+1):output):null;
       if(!pdf||!pdf.startsWith('JVBER'))throw Error('The activity did not produce a valid PDF.');
       if(pdf.length>Math.ceil(5*1024*1024*4/3)+100)throw Error('The PDF is over the 5 MB limit.');
       status('Your PDF is ready. Choose your initials and send your work.');
