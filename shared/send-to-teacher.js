@@ -83,7 +83,7 @@ function mount(options){
     if(!pdf){status('PDF is not ready.');return;}
     busy=true;refresh();status('Sending your work…');
     try{
-      const r=await request({action:'submit',token:t,student,activity:String(options.activity).slice(0,60),pdfBase64:pdf},'mrscott-submit-result');
+      const r=await request({action:'submit',token:t,student,activity:String(typeof options.activity==='function'?options.activity():options.activity).slice(0,60),pdfBase64:pdf},'mrscott-submit-result');
       if(r.success){pdf=null;status('Your work was sent successfully!');if(typeof options.onSuccess==='function')options.onSuccess(r);}
       else{
         status('Could not save your work: '+String(r.message||'Unknown error'));
