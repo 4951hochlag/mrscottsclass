@@ -84,7 +84,7 @@ async function pictureSentencesPdfBase64(){
 if(window.MrScottSendToTeacher){
   MrScottSendToTeacher.mount({
     button:'#sendTeacher',
-    activity:()=> 'Picture Sentences '+level+'.'+setNo,
+    activity:()=> 'Picture Sentences '+level+'-'+setNo,
     getPdfBase64:pictureSentencesPdfBase64
   });
 }else{
