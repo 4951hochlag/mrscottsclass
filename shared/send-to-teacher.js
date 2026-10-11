@@ -81,6 +81,10 @@ function mount(options){
     if(!STUDENTS.includes(student)){status('Choose your initials first.');return;}
     const t=token();if(!t){status('Session expired. Enter the password again.');refresh();return;}
     if(!pdf){status('PDF is not ready.');return;}
+    if(typeof options.beforeSend==='function'){
+      try{if(!(await options.beforeSend({student})))return;}
+      catch(e){status('Cannot send: '+e.message);return;}
+    }
     busy=true;refresh();status('Sending your work…');
     try{
       const r=await request({action:'submit',token:t,student,activity:String(typeof options.activity==='function'?options.activity():options.activity).slice(0,60),pdfBase64:pdf},'mrscott-submit-result');
