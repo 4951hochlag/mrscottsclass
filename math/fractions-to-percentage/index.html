@@ -19,7 +19,7 @@ check.addEventListener('click',()=>{const typed=answer.value.trim();if(typed==='
 updateSendAvailability();next.addEventListener('click',newRound);document.getElementById('level').addEventListener('change',()=>{previous='';newRound()});answer.addEventListener('keydown',e=>{if(e.key==='Enter')check.click()});newRound();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../../shared/send-to-teacher.js?v=20261011confirm"></script>
+<script src="../../shared/send-to-teacher.js?v=20261015subject"></script>
 <script>
 async function fractionsPercentagePdf(){
   if(completedRounds.length<5)throw Error('Complete at least five questions first.');
