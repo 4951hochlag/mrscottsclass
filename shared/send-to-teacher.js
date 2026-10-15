@@ -43,6 +43,10 @@ function request(fields,expectedType){
     try{form.submit();}catch(e){finish(e);}
   });
 }
+function subjectForPage(){
+  const section=location.pathname.split('/').filter(Boolean).map(s=>s.toLowerCase())[1]||'';
+  return ({english:'English',math:'Math',french:'French','world-of-work':'World of Work'})[section]||'';
+}
 function mount(options){
   if(!options||!options.button||typeof options.getPdfBase64!=='function'||!options.activity)throw Error('Specify button, activity and getPdfBase64.');
   const button=typeof options.button==='string'?document.querySelector(options.button):options.button;
@@ -87,7 +91,7 @@ function mount(options){
     }
     busy=true;refresh();status('Sending your work…');
     try{
-      const r=await request({action:'submit',token:t,student,activity:String(typeof options.activity==='function'?options.activity():options.activity).slice(0,60),pdfBase64:pdf},'mrscott-submit-result');
+      const r=await request({action:'submit',token:t,student,activity:(()=>{const name=String(typeof options.activity==='function'?options.activity():options.activity);const subject=subjectForPage();return (subject&&!name.toLowerCase().startsWith(subject.toLowerCase()+' - ')?subject+' - '+name:name).slice(0,60);})(),pdfBase64:pdf},'mrscott-submit-result');
       if(r.success){pdf=null;status('Your work was sent successfully!');if(typeof options.onSuccess==='function')options.onSuccess(r);}
       else{
         status('Could not save your work: '+String(r.message||'Unknown error'));
