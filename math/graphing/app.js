@@ -71,16 +71,16 @@ async function oneAtATimePdf(){
     const png=await new Promise((resolve,reject)=>{
       const img=new Image();
       img.onload=()=>{
-        try{const canvas=document.createElement('canvas');canvas.width=1800;canvas.height=1120;
-          const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,1800,1120);ctx.drawImage(img,0,0,1800,1120);
-          resolve(canvas.toDataURL('image/png'));
+        try{const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=747;
+          const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          resolve(canvas.toDataURL('image/jpeg',0.78));
         }catch(e){reject(e);}
       };
       img.onerror=()=>reject(new Error('Could not render the graph for PDF.'));
       img.src=svgUrl;
     });
     if(y+110>maxY){pdf.addPage();y=19;}
-    pdf.addImage(png,'PNG',margin,y,176,109);y+=115;
+    pdf.addImage(png,'JPEG',margin,y,176,109,undefined,'FAST');y+=115;
   }
   if(S.c.pdf.questions&&S.c.questionsOn){
     addText('Graph questions',true,12);
@@ -95,6 +95,9 @@ async function oneAtATimePdf(){
     addText('Graph: '+(S.graphCorrect?'Correct':'Not yet correct'));
     if(S.c.questionsOn)addText('Questions correct: '+S.questions.filter((q,i)=>right(q,S.responses[i])).length+' of '+S.questions.length);
   }
-  return pdf.output('datauristring');
+  const output=pdf.output('datauristring');
+  const base64=output.substring(output.indexOf(',')+1);
+  if(base64.length>Math.ceil(5*1024*1024*4/3)+100)throw Error('PDF is too large to send (5 MB maximum). Try fewer graph options.');
+  return output;
 }
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('presentation')});document.addEventListener('keydown',e=>{if(S?.stage==='collect'&&(e.code==='Space'||e.key==='ArrowRight')&&!['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement.tagName)&&S.revealed<S.students.length){e.preventDefault();S.revealed++;collect();save()}});try{let x=sessionStorage.getItem('surveyActivity');if(x){S=JSON.parse(x);show()}}catch(e){sessionStorage.removeItem('surveyActivity')}
