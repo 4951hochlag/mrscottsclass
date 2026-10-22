@@ -121,23 +121,29 @@ $('#sendTeacher').onclick=async()=> {
       graph.style.setProperty('--rh',(300/Math.max(5,...Object.values(state.counts)))+'px');
     }
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale:1.25,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
+    // Keep submissions under the server's 5 MB PDF limit by progressively
+    // reducing raster resolution and JPEG quality when necessary.
     const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const w=190;
-    const pageHeight=277;
-    // Slice the canvas to avoid losing content on long reports.
-    const sliceHeight=Math.floor(canvas.width*pageHeight/w);
-    for(let top=0,page=0;top<canvas.height;top+=sliceHeight,page++){
-      if(page) pdf.addPage();
-      const slice=document.createElement('canvas');
-      slice.width=canvas.width;
-      slice.height=Math.min(sliceHeight,canvas.height-top);
-      slice.getContext('2d').drawImage(canvas,0,top,canvas.width,slice.height,0,0,slice.width,slice.height);
-      pdf.addImage(slice.toDataURL('image/jpeg',0.72),'JPEG',10,10,w,slice.height*w/slice.width,undefined,'FAST');
+    let data='';
+    for(const [scale,quality] of [[1.25,0.72],[1,0.58],[0.8,0.45],[0.65,0.35]]){
+      const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
+      const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+      const w=190, pageHeight=277;
+      const sliceHeight=Math.floor(canvas.width*pageHeight/w);
+      for(let top=0,page=0;top<canvas.height;top+=sliceHeight,page++){
+        if(page) pdf.addPage();
+        const slice=document.createElement('canvas');
+        slice.width=canvas.width;
+        slice.height=Math.min(sliceHeight,canvas.height-top);
+        slice.getContext('2d').drawImage(canvas,0,top,canvas.width,slice.height,0,0,slice.width,slice.height);
+        pdf.addImage(slice.toDataURL('image/jpeg',quality),'JPEG',10,10,w,slice.height*w/slice.width,undefined,'FAST');
+      }
+      data=pdf.output('datauristring');
+      canvas.width=canvas.height=0;
+      // Base64 expands binary by 4/3; check actual PDF bytes.
+      if((data.split(',')[1].length*3/4)<=5*1024*1024) break;
     }
-    const data=pdf.output('datauristring');
-    if(data.length>6.5*1024*1024) throw Error('PDF is still over the 5 MB upload limit. Try a shorter survey.');
+    if((data.split(',')[1].length*3/4)>5*1024*1024) throw Error('PDF exceeds the 5 MB upload limit even after compression.');
     // Keep the generated PDF only in memory for this test, not in persistent storage.
     window.pendingSurveyPdf=data.split(',')[1];
     const dialog=document.getElementById('submitDialog');
