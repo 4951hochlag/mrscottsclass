@@ -72,63 +72,59 @@ $('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').on
   ],'PDF creation library');
 }
 async function prepareSurveyPdf(){
-  await ensurePdfTools();
-  capture();
-  // Capture the actual student graph, not the separately reconstructed print graph.
+  await ensurePdfTools();capture();
   const original=$('#graphArea');
   if(!original||!original.querySelector('.graph-body'))throw Error('Graph not available.');
-  const host=document.createElement('div');
-  const clone=original.cloneNode(true);
-  host.style.cssText='position:fixed;left:-10000px;top:0;background:#fff;padding:16px;z-index:-1;';
-  const width=Math.max(720,original.scrollWidth,original.querySelector('.graph-body').scrollWidth+32);
-  host.style.width=(width+32)+'px';
+  const host=document.createElement('div'),clone=original.cloneNode(true);
+  const width=Math.max(800,original.scrollWidth,original.querySelector('.graph-body').scrollWidth+32);
+  host.style.cssText='position:fixed;left:-10000px;top:0;width:'+(width+32)+'px;background:white;padding:16px;z-index:-1;';
   clone.style.cssText='overflow:visible;width:'+width+'px;--gh:'+getComputedStyle(original).getPropertyValue('--gh')+';--rh:'+getComputedStyle(original).getPropertyValue('--rh')+';';
   clone.querySelectorAll('input').forEach(input=>{
     const text=document.createElement('div');text.textContent=input.value||'';
-    text.style.cssText=getComputedStyle(input).cssText;
-    if(input.id==='gt')text.style.cssText='text-align:center;font-weight:800;font-size:20px;min-height:40px;';
-    else if(input.id==='gx')text.style.cssText='text-align:center;font-weight:800;font-size:18px;min-height:36px;';
-    else text.style.cssText='writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;text-align:center;height:100%;margin:auto;';
+    if(input.id==='gt')text.style.cssText='text-align:center;font-weight:800;font-size:22px;min-height:40px;';
+    else if(input.id==='gx')text.style.cssText='text-align:center;font-weight:800;font-size:18px;min-height:40px;';
+    else text.style.cssText='font-weight:800;text-align:center;font-size:16px;line-height:1.3;white-space:nowrap;';
+    if(input.id==='gy'){
+      const slot=input.closest('.yslot');
+      // Render the Y label horizontally in the PDF capture to avoid rotated-text bugs.
+      if(slot){slot.style.cssText='display:flex;align-items:center;justify-content:center;height:100%;';text.style.cssText='font-weight:800;font-size:15px;white-space:normal;overflow-wrap:normal;word-break:normal;text-align:center;line-height:1.3;width:100%;';}
+    }
     input.replaceWith(text);
   });
+  // Use a wider Y-label column in the PDF capture; keep the student graph unchanged.
+  const body=clone.querySelector('.graph-body');
+  if(body){body.style.gridTemplateColumns='105px 48px minmax(0,1fr)';body.style.minWidth='0';}
+  clone.querySelector('.xlabels').style.marginLeft='153px';
+  clone.querySelector('.xlabels').style.minWidth='0';
+  clone.querySelector('.xslot').style.marginLeft='153px';
+  clone.querySelector('.xslot').style.minWidth='0';
   host.appendChild(clone);document.body.appendChild(host);
   try{
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const graphCanvas=await html2canvas(host,{backgroundColor:'#fff',scale:1.5,logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(window.innerWidth,width+100)});
-    const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-    const margin=12,pageW=210,pageH=297,contentW=pageW-2*margin;
+    const {jsPDF}=window.jspdf,margin=12,pageW=297,pageH=210,contentW=pageW-2*margin;
     let data='';
     for(const quality of [0.82,0.65,0.45,0.3]){
-      const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-      let y=18;
-      doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('Survey & Graph',margin,y);y+=10;
-      doc.setFontSize(12);
+      const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+      let y=14;
+      doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Survey & Graph',margin,y);y+=8;
+      doc.setFont('helvetica','normal');doc.setFontSize(11);
       const questionLines=doc.splitTextToSize(state.question,contentW);
-      doc.text(questionLines,margin,y);y+=questionLines.length*6+7;
-      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Collected Data',margin,y);y+=7;
-      doc.setFont('helvetica','normal');doc.setFontSize(10);
+      doc.text(questionLines,margin,y);y+=questionLines.length*5+5;
+      const availableHeight=pageH-margin-y;
+      const imageW=Math.min(contentW,availableHeight*graphCanvas.width/graphCanvas.height);
+      const imageH=imageW*graphCanvas.height/graphCanvas.width;
+      const imageX=(pageW-imageW)/2;
+      doc.addImage(graphCanvas.toDataURL('image/jpeg',quality),'JPEG',imageX,y,imageW,imageH,undefined,'FAST');
+      // Data on its own page, never interrupting the graph image.
+      doc.addPage();
+      let rowY=17;
+      doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Collected Data',margin,rowY);rowY+=10;
+      doc.setFont('helvetica','normal');doc.setFontSize(11);
       for(const option of state.options){
         const lines=doc.splitTextToSize(option+': '+state.counts[option],contentW);
-        if(y+lines.length*5>pageH-20){doc.addPage();y=18;}
-        doc.text(lines,margin,y);y+=lines.length*5+2;
-      }
-      y+=8;
-      const imageHeight=graphCanvas.height*contentW/graphCanvas.width;
-      if(y+Math.min(imageHeight,100)>pageH-margin){doc.addPage();y=margin;}
-      const available=pageH-margin-y;
-      const pixelsPerMm=graphCanvas.width/contentW;
-      let top=0;
-      while(top<graphCanvas.height){
-        const room=top===0?available:pageH-2*margin;
-        const slicePx=Math.min(graphCanvas.height-top,Math.floor(room*pixelsPerMm));
-        if(slicePx<=0)throw Error('PDF page has no room for graph.');
-        const slice=document.createElement('canvas');
-        slice.width=graphCanvas.width;slice.height=slicePx;
-        slice.getContext('2d').drawImage(graphCanvas,0,top,graphCanvas.width,slicePx,0,0,slice.width,slice.height);
-        doc.addImage(slice.toDataURL('image/jpeg',quality),'JPEG',margin,y,contentW,slicePx/pixelsPerMm,undefined,'FAST');
-        top+=slicePx;
-        if(top<graphCanvas.height){doc.addPage();y=margin;}
+        if(rowY+lines.length*6>pageH-margin){doc.addPage();rowY=17;}
+        doc.text(lines,margin,rowY);rowY+=lines.length*6+3;
       }
       data=doc.output('datauristring');
       if(data.split(',')[1].length*3/4<=5*1024*1024)break;
