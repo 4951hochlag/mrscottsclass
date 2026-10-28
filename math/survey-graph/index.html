@@ -71,10 +71,7 @@ $('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').on
     'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
   ],'PDF creation library');
 }
-$('#sendTeacher').onclick=async()=> {
-  const btn=$('#sendTeacher');
-  btn.disabled=true;
-  btn.textContent='Preparing PDF…';
+async function prepareSurveyPdf(){
   let sheet;
   try {
     await ensurePdfTools();
@@ -144,21 +141,38 @@ $('#sendTeacher').onclick=async()=> {
       if((data.split(',')[1].length*3/4)<=5*1024*1024) break;
     }
     if((data.split(',')[1].length*3/4)>5*1024*1024) throw Error('PDF exceeds the 5 MB upload limit even after compression.');
-    // Keep the generated PDF only in memory for this test, not in persistent storage.
+    return data;
+  } finally {
+    if(sheet) sheet.remove();
+  }
+}
+$('#sendTeacher').onclick=async()=>{
+  const btn=$('#sendTeacher');btn.disabled=true;btn.textContent='Preparing PDF…';
+  try{
+    const data=await prepareSurveyPdf();
     window.pendingSurveyPdf=data.split(',')[1];
-    const dialog=document.getElementById('submitDialog');
     $('#submissionStudent').value='';
     $('#submissionPassword').value='';
     $('#submissionStatus').textContent='Your PDF is ready. Choose your initials and send it to your teacher.';
     refreshSubmissionLogin();
-    dialog.showModal();
-  } catch(err) {
-    alert('Could not prepare the PDF: '+err.message+' You can still use Save My Work as PDF.');
-  } finally {
-    if(sheet) sheet.remove();
-    btn.disabled=false;
-    btn.textContent='Send to Teacher';
-  }
+    document.getElementById('submitDialog').showModal();
+  }catch(err){alert('Could not prepare the PDF: '+err.message);}
+  finally{btn.disabled=false;btn.textContent='Send to Teacher';}
+};
+$('#savePDF').onclick=async()=>{
+  const btn=$('#savePDF');btn.disabled=true;btn.textContent='Preparing PDF…';
+  try{
+    const data=await prepareSurveyPdf();
+    const base64=data.split(',')[1];
+    const bytes=atob(base64),arr=new Uint8Array(bytes.length);
+    for(let i=0;i<bytes.length;i++)arr[i]=bytes.charCodeAt(i);
+    const url=URL.createObjectURL(new Blob([arr],{type:'application/pdf'}));
+    const link=document.createElement('a');
+    link.href=url;link.download='Survey-and-Graph.pdf';
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(err){alert('Could not save the PDF: '+err.message);}
+  finally{btn.disabled=false;btn.textContent='Save My Work as PDF';}
 };
 // Login-only integration test. Never send a PDF until authenticated uploads
 // have been tested separately. Tokens remain in tab-scoped sessionStorage.
@@ -276,6 +290,6 @@ $('#submitStudentWork').onclick=async()=>{
     if(window.pendingSurveyPdf)button.disabled=false;
   }
 };
-$('#savePDF').onclick=printWork;$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
+$('#startNewSurvey').onclick=resetSurvey;$('#newSurvey').onclick=resetSurvey;
 try{let old=JSON.parse(localStorage.getItem('surveyGraphApp'));if(old&&old.options&&old.options.length){Object.assign(state,old);$('#question').value=state.question;$('#options').value=state.options.join('\n');renderTallies();show('collect',1)}}catch(e){}
 </script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script></body></html>
