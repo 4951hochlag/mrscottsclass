@@ -72,79 +72,71 @@ $('#start').onclick=begin;$('#endSurvey').onclick=resetSurvey;$('#nextClass').on
   ],'PDF creation library');
 }
 async function prepareSurveyPdf(){
-  let sheet;
-  try {
-    await ensurePdfTools();
-    capture();
-    // Build the same printable graph without invoking the browser print dialog.
-    printWork(true);
-    sheet=document.getElementById('printSheet');
-    if(!sheet) throw Error('Could not prepare the printable graph.');
-    // Print stylesheet hides the sheet on screen. Give the temporary capture
-    // its own off-screen layout without changing the visible activity.
-    sheet.style.cssText='display:block!important;position:fixed;left:0;top:0;width:790px;padding:18px;background:white;color:#111;z-index:-1;visibility:visible;transform:translateX(-200vw);';
-    // Print-only rules do not apply during html2canvas capture. Supply the
-    // equivalent styles explicitly in the capture clone.
-    const captureStyles=document.createElement('style');
-    captureStyles.textContent=`#printSheet{font-family:Arial,sans-serif}#printSheet h1,#printSheet h2{text-align:center}#printSheet table{width:100%;border-collapse:collapse;margin:8px 0 14px}#printSheet th,#printSheet td{border:1px solid #777;padding:7px;text-align:left}#printSheet .printGraphHolder{margin:18px auto 0;width:100%}#printGraphClone{width:100%;--gh:300px!important}#printGraphClone .graph-body{grid-template-columns:44px 48px minmax(0,1fr);min-width:0;height:300px}#printGraphClone .yaxis{height:300px;display:block!important;position:relative}#printGraphClone .plot{box-sizing:border-box;height:300px!important;min-width:0;padding:0 7px}#printGraphClone .barcol{height:100%;display:flex;flex-direction:column-reverse;padding:0 4px}#printGraphClone .cell{display:block!important;flex:0 0 var(--rh);height:var(--rh)!important;min-height:0!important;background:#fff}#printGraphClone .cell.on{background:#3b82f6!important}#printGraphClone .xlabels,#printGraphClone .xslot{min-width:0}#printGraphClone .xlabels{padding-top:3px;padding-bottom:6px}#printGraphClone .yaxis span{line-height:1;transform:translateY(-50%)}#printGraphClone .yaxis span:first-child{transform:translateY(0)}#printGraphClone .y-label-value{writing-mode:vertical-rl;transform:rotate(180deg)}`;
-    sheet.prepend(captureStyles);
-    const graph=sheet.querySelector('#printGraphClone');
-    if(graph) {
-      // html2canvas does not consistently reproduce vertical writing-mode
-      // combined with CSS rotation. Rasterize only the y-axis label with a
-      // native canvas so the PDF always reads bottom-to-top.
-      const yLabel=graph.querySelector('.y-label-value');
-      if(yLabel){
-        // Use an image with its orientation baked into the SVG. This avoids
-        // html2canvas misrendering writing-mode, transforms and nested canvases.
-        const labelText=yLabel.textContent||'';
-        const escaped=labelText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-        const svg='<svg xmlns="http://www.w3.org/2000/svg" width="42" height="300" viewBox="0 0 42 300">'+
-          '<rect width="42" height="300" fill="#fff"/>'+
-          '<text x="0" y="0" transform="translate(21 150) rotate(-90)" fill="#172033" font-family="Arial,sans-serif" font-size="16" font-weight="800" text-anchor="middle" dominant-baseline="middle" textLength="'+Math.min(260,Math.max(1,labelText.length*9))+'" lengthAdjust="spacingAndGlyphs">'+escaped+'</text></svg>';
-        const img=document.createElement('img');
-        img.alt=labelText;
-        img.width=42;img.height=300;
-        img.style.cssText='display:block;width:42px;height:300px;min-width:42px;max-width:42px;object-fit:contain;transform:none;writing-mode:horizontal-tb;margin:auto';
-        img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-        yLabel.replaceWith(img);
-        await new Promise((resolve,reject)=>{
-          if(img.complete){resolve();return;}
-          img.onload=resolve;
-          img.onerror=()=>reject(new Error('Y-axis label image could not load.'));
-        });
-      }
-      graph.style.setProperty('--gh','300px');
-      graph.style.setProperty('--rh',(300/Math.max(5,...Object.values(state.counts)))+'px');
-    }
+  await ensurePdfTools();
+  capture();
+  // Capture the actual student graph, not the separately reconstructed print graph.
+  const original=$('#graphArea');
+  if(!original||!original.querySelector('.graph-body'))throw Error('Graph not available.');
+  const host=document.createElement('div');
+  const clone=original.cloneNode(true);
+  host.style.cssText='position:fixed;left:-10000px;top:0;background:#fff;padding:16px;z-index:-1;';
+  const width=Math.max(720,original.scrollWidth,original.querySelector('.graph-body').scrollWidth+32);
+  host.style.width=(width+32)+'px';
+  clone.style.cssText='overflow:visible;width:'+width+'px;--gh:'+getComputedStyle(original).getPropertyValue('--gh')+';--rh:'+getComputedStyle(original).getPropertyValue('--rh')+';';
+  clone.querySelectorAll('input').forEach(input=>{
+    const text=document.createElement('div');text.textContent=input.value||'';
+    text.style.cssText=getComputedStyle(input).cssText;
+    if(input.id==='gt')text.style.cssText='text-align:center;font-weight:800;font-size:20px;min-height:40px;';
+    else if(input.id==='gx')text.style.cssText='text-align:center;font-weight:800;font-size:18px;min-height:36px;';
+    else text.style.cssText='writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;text-align:center;height:100%;margin:auto;';
+    input.replaceWith(text);
+  });
+  host.appendChild(clone);document.body.appendChild(host);
+  try{
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    // Keep submissions under the server's 5 MB PDF limit by progressively
-    // reducing raster resolution and JPEG quality when necessary.
+    const graphCanvas=await html2canvas(host,{backgroundColor:'#fff',scale:1.5,logging:false,scrollX:0,scrollY:0,windowWidth:Math.max(window.innerWidth,width+100)});
     const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    const margin=12,pageW=210,pageH=297,contentW=pageW-2*margin;
     let data='';
-    for(const [scale,quality] of [[1.25,0.72],[1,0.58],[0.8,0.45],[0.65,0.35]]){
-      const canvas=await html2canvas(sheet,{backgroundColor:'#ffffff',scale,logging:false,width:790,windowWidth:1000,onclone:doc=>{const s=doc.getElementById('printSheet');s.style.transform='none';s.style.position='absolute';s.style.left='0';s.style.top='0';s.style.zIndex='1';}});
-      const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-      const w=190, pageHeight=277;
-      const sliceHeight=Math.floor(canvas.width*pageHeight/w);
-      for(let top=0,page=0;top<canvas.height;top+=sliceHeight,page++){
-        if(page) pdf.addPage();
-        const slice=document.createElement('canvas');
-        slice.width=canvas.width;
-        slice.height=Math.min(sliceHeight,canvas.height-top);
-        slice.getContext('2d').drawImage(canvas,0,top,canvas.width,slice.height,0,0,slice.width,slice.height);
-        pdf.addImage(slice.toDataURL('image/jpeg',quality),'JPEG',10,10,w,slice.height*w/slice.width,undefined,'FAST');
+    for(const quality of [0.82,0.65,0.45,0.3]){
+      const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+      let y=18;
+      doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('Survey & Graph',margin,y);y+=10;
+      doc.setFontSize(12);
+      const questionLines=doc.splitTextToSize(state.question,contentW);
+      doc.text(questionLines,margin,y);y+=questionLines.length*6+7;
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Collected Data',margin,y);y+=7;
+      doc.setFont('helvetica','normal');doc.setFontSize(10);
+      for(const option of state.options){
+        const lines=doc.splitTextToSize(option+': '+state.counts[option],contentW);
+        if(y+lines.length*5>pageH-20){doc.addPage();y=18;}
+        doc.text(lines,margin,y);y+=lines.length*5+2;
       }
-      data=pdf.output('datauristring');
-      canvas.width=canvas.height=0;
-      // Base64 expands binary by 4/3; check actual PDF bytes.
-      if((data.split(',')[1].length*3/4)<=5*1024*1024) break;
+      y+=8;
+      const imageHeight=graphCanvas.height*contentW/graphCanvas.width;
+      if(y+Math.min(imageHeight,100)>pageH-margin){doc.addPage();y=margin;}
+      const available=pageH-margin-y;
+      const pixelsPerMm=graphCanvas.width/contentW;
+      let top=0;
+      while(top<graphCanvas.height){
+        const room=top===0?available:pageH-2*margin;
+        const slicePx=Math.min(graphCanvas.height-top,Math.floor(room*pixelsPerMm));
+        if(slicePx<=0)throw Error('PDF page has no room for graph.');
+        const slice=document.createElement('canvas');
+        slice.width=graphCanvas.width;slice.height=slicePx;
+        slice.getContext('2d').drawImage(graphCanvas,0,top,graphCanvas.width,slicePx,0,0,slice.width,slice.height);
+        doc.addImage(slice.toDataURL('image/jpeg',quality),'JPEG',margin,y,contentW,slicePx/pixelsPerMm,undefined,'FAST');
+        top+=slicePx;
+        if(top<graphCanvas.height){doc.addPage();y=margin;}
+      }
+      data=doc.output('datauristring');
+      if(data.split(',')[1].length*3/4<=5*1024*1024)break;
     }
-    if((data.split(',')[1].length*3/4)>5*1024*1024) throw Error('PDF exceeds the 5 MB upload limit even after compression.');
+    graphCanvas.width=graphCanvas.height=0;
+    if(data.split(',')[1].length*3/4>5*1024*1024)throw Error('PDF exceeds 5 MB.');
     return data;
-  } finally {
-    if(sheet) sheet.remove();
-  }
+  }finally{host.remove();}
 }
 $('#sendTeacher').onclick=async()=>{
   const btn=$('#sendTeacher');btn.disabled=true;btn.textContent='Preparing PDF…';
