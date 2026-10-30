@@ -14,7 +14,7 @@ function addTeacherDecoration(index){const entry=teacherDecorations[index];if(!e
 const teacherGallery=document.querySelector('#teacherGallery');teacherDecorations.forEach(([name,art],i)=>{let b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Add '+name);b.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true">'+art+'</svg><span>'+name+'</span>';b.onclick=()=>addTeacherDecoration(i);teacherGallery.append(b)});
 
 // Shared gallery requires a separately deployed Apps Script web app.
-const TEACHER_GALLERY_API='';let teacherSession='';
+const TEACHER_GALLERY_API='https://script.google.com/macros/s/AKfycbwT2G2CIB7dz5xtkXRGqPOYKWu4LBnfea_xXBqEdSSQSrLfctoDMR2-30agTf5hYEP7/exec';let teacherSession='';
 async function galleryRequest(action,payload={}){if(!TEACHER_GALLERY_API)throw Error('Shared gallery is not connected yet. The teacher must configure its Apps Script URL.');const response=action==='list'?await fetch(TEACHER_GALLERY_API+'?action=list'):await fetch(TEACHER_GALLERY_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload})});const data=await response.json();if(!data.ok)throw Error(data.error||'Gallery request failed');return data}
 function teacherStatus(t){document.querySelector('#teacherStatus').textContent=t}
 async function teacherSignIn(){try{const data=await galleryRequest('login',{password:document.querySelector('#teacherPassword').value});teacherSession=data.token;document.querySelector('#teacherPassword').value='';document.querySelector('#teacherControls').hidden=false;teacherStatus('Signed in. You can manage the gallery.');await refreshSharedGallery()}catch(e){teacherStatus(e.message)}}
