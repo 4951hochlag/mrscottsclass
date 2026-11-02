@@ -28,7 +28,9 @@ async function fractionsPercentagePdf(){
   const margin=18,width=174;
   pdf.setFont('helvetica','bold');pdf.setFontSize(17);pdf.text('Fractions to Percentage',margin,22);
   pdf.setFont('helvetica','normal');pdf.setFontSize(12);pdf.text('Completed questions: '+completedRounds.length,margin,33);
-  let y=47;
+  const firstTry=completedRounds.filter(q=>q.attempts===1).length;
+  pdf.setFont('helvetica','bold');pdf.text('First-attempt score: '+firstTry+' / '+completedRounds.length+' ('+Math.round(firstTry/completedRounds.length*100)+'%)',margin,41);
+  let y=54;
   completedRounds.forEach((q,index)=>{
     if(y>263){pdf.addPage();y=22;}
     pdf.setFont('helvetica','bold');pdf.setFontSize(11);pdf.text('Question '+(index+1)+' ('+q.level+')',margin,y);y+=7;
