@@ -10,10 +10,12 @@ const STUDENTS=['A.D.','A.D.A.','G.A.','E.P.','G.M.','V.P.','M.F.','L.T.'];
 const TOKEN_KEY='mrscottSubmissionToken';
 const TIME_KEY='mrscottSubmissionLoginAt';
 const SESSION_MS=2*60*60*1000;
-function token(){
-  const t=sessionStorage.getItem(TOKEN_KEY);
-  const at=Number(sessionStorage.getItem(TIME_KEY)||0);
-  if(!t||!at||Date.now()-at>=SESSION_MS){sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TIME_KEY);return null;}
+function token(anonymous){
+  const tokenKey=anonymous?'mrscottSurveyToken':TOKEN_KEY;
+  const timeKey=anonymous?'mrscottSurveyLoginAt':TIME_KEY;
+  const t=sessionStorage.getItem(tokenKey);
+  const at=Number(sessionStorage.getItem(timeKey)||0);
+  if(!t||!at||Date.now()-at>=SESSION_MS){sessionStorage.removeItem(tokenKey);sessionStorage.removeItem(timeKey);return null;}
   return t;
 }
 function request(fields,expectedType){
@@ -62,22 +64,22 @@ function mount(options){
     '<button data-role="send" type="button">Send My Work</button><button data-role="close" type="button">Close</button></div>';
   document.body.append(dialog);
   if(anonymous)dialog.querySelector('[data-role="student"]').parentElement.querySelector('label[for="mrscott-student"]').remove();
-  if(anonymous)dialog.querySelector('[data-role="student"]').remove();
+  if(anonymous){dialog.querySelector('[data-role="student"]').remove();dialog.querySelector('label[for="mrscott-password"]').textContent='Survey password';}
   const el=role=>dialog.querySelector('[data-role="'+role+'"]');
   const status=text=>{el('status').textContent=text;};
   let pdf=null,busy=false;
-  function refresh(){el('login').style.display=token()?'none':'grid';el('send').disabled=busy||!pdf||!token();}
+  function refresh(){el('login').style.display=token(anonymous)?'none':'grid';el('send').disabled=busy||!pdf||!token(anonymous);}
   el('close').onclick=()=>{if(!busy)dialog.close();};
   el('unlock').onclick=async()=>{
     const password=el('password').value;
-    if(!password){status('Enter the classroom password.');return;}
+    if(!password){status(anonymous?'Enter the survey password.':'Enter the classroom password.');return;}
     el('unlock').disabled=true;
     try{
-      const r=await request({action:'login',password},'mrscott-login-result');
+      const r=await request({action:anonymous?'survey-login':'login',password},'mrscott-login-result');
       el('password').value='';
       if(r.success&&typeof r.token==='string'&&r.token.length>20){
-        sessionStorage.setItem(TOKEN_KEY,r.token);
-        sessionStorage.setItem(TIME_KEY,String(Date.now()));
+        sessionStorage.setItem(anonymous?'mrscottSurveyToken':TOKEN_KEY,r.token);
+        sessionStorage.setItem(anonymous?'mrscottSurveyLoginAt':TIME_KEY,String(Date.now()));
         status(anonymous?'Classroom unlocked. Send your anonymous survey.':'Classroom unlocked. Choose your initials and send your work.');
       }else status('Login unsuccessful: '+String(r.message||'Check the password.'));
     }catch(e){el('password').value='';status('Could not verify login: '+e.message);}
@@ -86,7 +88,7 @@ function mount(options){
   el('send').onclick=async()=>{
     const student=anonymous?'SURVEY_ANONYMOUS':el('student').value;
     if(!anonymous&&!STUDENTS.includes(student)){status('Choose your initials first.');return;}
-    const t=token();if(!t){status('Session expired. Enter the password again.');refresh();return;}
+    const t=token(anonymous);if(!t){status('Session expired. Enter the password again.');refresh();return;}
     if(!pdf){status('PDF is not ready.');return;}
     if(typeof options.beforeSend==='function'){
       try{if(!(await options.beforeSend({student})))return;}
@@ -98,7 +100,7 @@ function mount(options){
       if(r.success){pdf=null;status('Your work was sent successfully!');if(typeof options.onSuccess==='function')options.onSuccess(r);}
       else{
         status('Could not save your work: '+String(r.message||'Unknown error'));
-        if(/session expired/i.test(String(r.message||''))){sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TIME_KEY);}
+        if(/session expired/i.test(String(r.message||''))){sessionStorage.removeItem(anonymous?'mrscottSurveyToken':TOKEN_KEY);sessionStorage.removeItem(anonymous?'mrscottSurveyLoginAt':TIME_KEY);}
       }
     }catch(e){status(e.message);}
     finally{busy=false;refresh();}
