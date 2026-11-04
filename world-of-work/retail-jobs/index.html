@@ -47,4 +47,30 @@ async function retailJobsPdf(){if(quizIndex<15||firstAttemptAnswers.length!==15)
 const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),margin=16,width=178;let y=20;pdf.setFont('helvetica','bold');pdf.setFontSize(18);pdf.text('Retail Jobs: '+jobs[current][0],margin,y);y+=10;pdf.setFontSize(12);pdf.text('First-attempt score: '+quizScore+' / 15 ('+Math.round(quizScore/15*100)+'%)',margin,y);y+=8;pdf.setFont('helvetica','normal');pdf.setFontSize(10);pdf.text('Job preference: '+(reflectionChoice||'Not selected'),margin,y);y+=10;
 firstAttemptAnswers.forEach((a,i)=>{const lines=[(i+1)+'. '+a.question,'Student answer: '+a.answer+' ('+(a.firstTry?'Correct on first try':'Retry needed')+')','Correct answer: '+a.correct].flatMap(s=>pdf.splitTextToSize(s,width));if(y+lines.length*5+5>280){pdf.addPage();y=20;}pdf.text(lines,margin,y);y+=lines.length*5+5;});return pdf.output('datauristring');}
 </script>
+
+<style>
+/* Independent audio controls for every quiz answer */
+#choices .retail-answer-row{display:flex;align-items:center;gap:8px;margin:9px 0}
+#choices .retail-answer-row .choice{flex:1;min-width:0;margin:0}
+#choices .retail-answer-row .answer-audio{flex:none;background:#e7eef9;color:#163b75;padding:10px 13px;margin:0;font-size:19px;min-width:48px;min-height:48px}
+#choices .retail-answer-row .answer-audio:disabled{opacity:1;cursor:pointer}
+</style>
+<script>
+// Keep answer selection and audio playback as separate actions.
+// A MutationObserver also handles questions rendered after Next or Try Again.
+(function(){
+ const choices=document.getElementById('choices');
+ function addAudio(){
+  Array.from(choices.children).forEach(button=>{
+   if(!button.classList.contains('choice')||button.parentElement.classList.contains('retail-answer-row'))return;
+   const row=document.createElement('div');row.className='retail-answer-row';
+   button.parentNode.insertBefore(row,button);row.appendChild(button);
+   const audio=document.createElement('button');audio.type='button';audio.className='answer-audio';audio.textContent='🔊';
+   audio.setAttribute('aria-label','Listen to answer: '+button.textContent);audio.title='Listen to this answer';
+   audio.addEventListener('click',()=>speakElement(button));row.appendChild(audio);
+  });
+ }
+ const observer=new MutationObserver(addAudio);observer.observe(choices,{childList:true});addAudio();
+})();
+</script>
 </body></html>
