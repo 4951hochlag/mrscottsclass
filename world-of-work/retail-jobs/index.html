@@ -88,7 +88,7 @@ firstAttemptAnswers.forEach((a,i)=>{const lines=[(i+1)+'. '+a.question,'Student 
  let mountedJob=-1;
  function sync(){
   const complete=current>=0 && quizIndex>=15 && firstAttemptAnswers.length===15;
-  button.disabled=!complete;
+  document.getElementById('retailSendAlways').disabled=!complete;
   status.textContent=complete?'All 15 questions complete. You can send your results.':'Complete all 15 questions to send your results to the teacher.';
   if(current!==mountedJob && current>=0 && window.MrScottSendToTeacher){
    // The shared helper attaches the submission dialog to this permanent button.
