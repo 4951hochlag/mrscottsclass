@@ -73,4 +73,37 @@ firstAttemptAnswers.forEach((a,i)=>{const lines=[(i+1)+'. '+a.question,'Student 
  const observer=new MutationObserver(addAudio);observer.observe(choices,{childList:true});addAudio();
 })();
 </script>
+
+<style>
+#retailSendStatus{font-size:14px;color:#52627c;margin:6px 0}
+#retailSendAlways{display:block;margin-top:12px}
+#retailSendAlways:disabled{opacity:.55}
+</style>
+<script>
+(function(){
+ const panel=document.getElementById('question').closest('.panel');
+ const button=document.createElement('button');button.id='retailSendAlways';button.type='button';button.textContent='📤 Send to Teacher';button.disabled=true;
+ const status=document.createElement('p');status.id='retailSendStatus';status.setAttribute('aria-live','polite');
+ panel.append(button,status);
+ let mountedJob=-1;
+ function sync(){
+  const complete=current>=0 && quizIndex>=15 && firstAttemptAnswers.length===15;
+  button.disabled=!complete;
+  status.textContent=complete?'All 15 questions complete. You can send your results.':'Complete all 15 questions to send your results to the teacher.';
+  if(current!==mountedJob && current>=0 && window.MrScottSendToTeacher){
+   // The shared helper attaches the submission dialog to this permanent button.
+   const fresh=button.cloneNode(true);button.replaceWith(fresh);
+   // Retain a stable button for future job changes by reloading the page on job selection below.
+   window.MrScottSendToTeacher.mount({button:fresh,activity:'Retail Jobs — '+jobs[current][0],getPdfBase64:retailJobsPdf});
+   mountedJob=current;
+   fresh.disabled=!complete;
+  }
+ }
+ const oldRender=renderQuiz;
+ renderQuiz=function(){oldRender();sync();};
+ const oldOpen=openJob;
+ openJob=function(i){if(mountedJob>=0 && mountedJob!==i){mountedJob=-1;}oldOpen(i);sync();};
+ sync();
+})();
+</script>
 </body></html>
