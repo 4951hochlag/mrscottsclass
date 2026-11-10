@@ -38,7 +38,7 @@ function audio(text,description){
  b.onclick=e=>{e.preventDefault();e.stopPropagation();speakAccessible(text,b)};return b;
 }
 // Reading paragraphs, so students can replay one short part at a time.
-document.querySelectorAll('.intro p').forEach((p,i)=>p.after(audio(p.textContent,'reading paragraph '+(i+1))));
+// The reading already has one full-passage audio button at the bottom.
 // Read each question and every answer separately, without selecting it.
 document.querySelectorAll('.question').forEach((q,i)=>{
  const prompt=q.querySelector('p');prompt.after(audio(prompt.textContent,'question '+(i+1)));
