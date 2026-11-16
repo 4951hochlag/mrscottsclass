@@ -13,3 +13,6 @@
 .customer-request-heading{font-size:1rem;font-weight:800;letter-spacing:.055em;color:#164d75;margin-bottom:9px}
 .customer-request-card #request{font-size:1.45rem;line-height:1.5;font-weight:750;color:#152f42;margin:0;overflow-wrap:anywhere}
 @media(max-width:600px){.customer-request-card{padding:14px 16px}.customer-request-card #request{font-size:1.25rem}}
+
+/* Two-column café setup controls */
+.cafe-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 22px;margin-bottom:16px}.cafe-settings label{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}.cafe-settings input,.cafe-settings select{width:100%;min-width:0;margin:0}.cafe-settings label[hidden]{display:none!important}@media(max-width:540px){.cafe-settings{grid-template-columns:1fr;gap:12px}}
