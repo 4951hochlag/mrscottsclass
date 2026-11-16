@@ -23,3 +23,6 @@
 .cafe-settings label[hidden]{display:none!important}
 .cafe-settings label input,.cafe-settings label select{width:100%;min-width:0;margin:0}
 @media(max-width:540px){.cafe-settings{grid-template-columns:minmax(110px,1fr) minmax(0,1.5fr);gap:10px}.cafe-settings label{display:contents}}
+
+/* Optional instructional support; never shows the answer */
+.learning-help{margin-top:12px}.help-button{background:#e8f3fc;border:2px solid #3779a4;color:#173c55;font-weight:700}.help-panel{background:#f1f8fd;border:2px solid #9dc8e2;border-radius:12px;padding:14px;margin:8px 0 14px;font-size:1rem;font-weight:normal;line-height:1.5}.help-panel p{margin:8px 0 0}.price-equation{font-size:1.25rem;font-weight:700;margin:12px 0}.number-line{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;margin:12px 0}.number-line span{border-top:3px solid #3676a5;text-align:center;font-size:.8rem;padding-top:5px}
