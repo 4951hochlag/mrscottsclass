@@ -26,3 +26,11 @@
 
 /* Optional instructional support; never shows the answer */
 .learning-help{margin-top:12px}.help-button{background:#e8f3fc;border:2px solid #3779a4;color:#173c55;font-weight:700}.help-panel{background:#f1f8fd;border:2px solid #9dc8e2;border-radius:12px;padding:14px;margin:8px 0 14px;font-size:1rem;font-weight:normal;line-height:1.5}.help-panel p{margin:8px 0 0}.price-equation{font-size:1.25rem;font-weight:700;margin:12px 0}.number-line{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:3px;margin:12px 0}.number-line span{border-top:3px solid #3676a5;text-align:center;font-size:.8rem;padding-top:5px}
+
+/* Customer portrait and accessible speech bubble */
+.customer-request-card{display:flex;align-items:center;gap:20px;background:transparent;border:0;border-radius:0;box-shadow:none;padding:8px 0;margin:14px 0 12px;overflow:visible}
+#customerPortrait{width:125px;height:145px;object-fit:contain;flex:0 0 125px;border-radius:18px}
+.customer-speech{position:relative;flex:1;min-width:0;background:#e9f3fc;border:3px solid #3676a5;border-radius:24px;padding:22px 24px}
+.customer-speech:before{content:"";position:absolute;left:-17px;top:46%;width:27px;height:27px;background:#e9f3fc;border-left:3px solid #3676a5;border-bottom:3px solid #3676a5;transform:rotate(45deg)}
+.customer-speech #request{position:relative;z-index:1}
+@media(max-width:600px){.customer-request-card{gap:12px}#customerPortrait{width:85px;height:105px;flex-basis:85px}.customer-speech{padding:15px;border-radius:18px}.customer-speech:before{left:-12px;width:18px;height:18px}}
