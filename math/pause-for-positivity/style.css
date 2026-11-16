@@ -16,3 +16,10 @@
 
 /* Two-column café setup controls */
 .cafe-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 22px;margin-bottom:16px}.cafe-settings label{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}.cafe-settings input,.cafe-settings select{width:100%;min-width:0;margin:0}.cafe-settings label[hidden]{display:none!important}@media(max-width:540px){.cafe-settings{grid-template-columns:1fr;gap:12px}}
+
+/* Settings: one field per row, label left and control right */
+.cafe-settings{display:grid;grid-template-columns:minmax(135px,1fr) minmax(0,2fr);gap:12px 18px;max-width:700px;align-items:center}
+.cafe-settings label{display:contents}
+.cafe-settings label[hidden]{display:none!important}
+.cafe-settings label input,.cafe-settings label select{width:100%;min-width:0;margin:0}
+@media(max-width:540px){.cafe-settings{grid-template-columns:minmax(110px,1fr) minmax(0,1.5fr);gap:10px}.cafe-settings label{display:contents}}
