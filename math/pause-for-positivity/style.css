@@ -34,3 +34,10 @@
 .customer-speech:before{content:"";position:absolute;left:-17px;top:46%;width:27px;height:27px;background:#e9f3fc;border-left:3px solid #3676a5;border-bottom:3px solid #3676a5;transform:rotate(45deg)}
 .customer-speech #request{position:relative;z-index:1}
 @media(max-width:600px){.customer-request-card{gap:12px}#customerPortrait{width:85px;height:105px;flex-basis:85px}.customer-speech{padding:15px;border-radius:18px}.customer-speech:before{left:-12px;width:18px;height:18px}}
+
+/* Keep order actions inside the order panel, beneath selected items */
+.order-columns .order-panel{position:sticky;top:12px;min-width:0}
+.order-columns #basket{position:static}
+.order-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:4px;margin-top:10px}
+.order-actions button{margin:3px;font-size:.95rem}
+@media(max-width:760px){.order-columns .order-panel{position:static}}
