@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mood Meter | Mr. Scott's Class</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="mood-meter.js"></script>
+</head>
+<body>
+  <header><a href="../">← Social Skills</a><h1>Mood Meter</h1></header>
+  <main>
+    <div class="modes" role="group" aria-label="Activity mode">
+      <button id="self" aria-pressed="true">Identify how you are feeling</button>
+      <button id="other" aria-pressed="false">Identify how someone else is feeling</button>
+    </div>
+    <section class="activity">
+      <div id="practice" hidden>
+        <img id="portrait" width="400" height="400" alt="">
+        <p id="scenario"></p>
+        <button class="speaker" id="hear-scenario" aria-label="Hear the situation">🔊</button>
+      </div>
+      <div class="questions">
+        <fieldset>
+          <legend><span id="energy-question">How is your energy?</span> <button type="button" class="speaker" data-hear="energy-question" aria-label="Hear the energy question">🔊</button></legend>
+          <div class="options">
+            <label><input type="radio" name="energy" value="low"><span>Low</span></label>
+            <label><input type="radio" name="energy" value="medium"><span>Medium</span></label>
+            <label><input type="radio" name="energy" value="high"><span>High</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend><span id="feeling-question">How are you feeling?</span> <button type="button" class="speaker" data-hear="feeling-question" aria-label="Hear the feeling question">🔊</button></legend>
+          <div class="options">
+            <label><input type="radio" name="feeling" value="negative"><span>Negative</span></label>
+            <label><input type="radio" name="feeling" value="neutral"><span>Neutral</span></label>
+            <label><input type="radio" name="feeling" value="positive"><span>Positive</span></label>
+          </div>
+        </fieldset>
+        <p id="status" role="status"></p>
+        <div class="actions">
+          <button id="reset">Start again</button>
+        </div>
+      </div>
+    </section>
+    <section aria-labelledby="chart-heading">
+      <h2 id="chart-heading">Choose a feeling</h2>
+      <p>Use the speaker buttons to hear each word.</p>
+      <p class="scroll-tip">Swipe or scroll sideways to see the whole chart.</p>
+      <div class="chart-scroll" tabindex="0" role="region" aria-label="Mood Meter chart">
+        <div class="chart">
+          <img src="mood-meter.jpg" width="2048" height="1638" alt="">
+          <div id="words"></div>
+        </div>
+      </div>
+      <p id="audio-status" role="status"></p>
+      <p id="result" role="status" tabindex="-1" hidden></p>
+      <button id="next" hidden>Next person</button>
+    </section>
+  </main>
+</body>
+</html>
