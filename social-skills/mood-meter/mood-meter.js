@@ -46,6 +46,96 @@ const situations = [
     image: "A girl smiles and holds up a medal.",
     context: "She earned a medal after practising for weeks.",
     words: ["Proud", "Happy", "Pleased", "Joyful", "Thrilled", "Satisfied"]
+  },
+  {
+    image: "A girl opens her eyes and mouth wide.",
+    context: "Her friends jumped out to welcome her back to school.",
+    words: ["Surprised", "Excited", "Thrilled", "Happy"]
+  },
+  {
+    image: "A boy frowns at a knotted cord.",
+    context: "He has tried three times to untangle it and the knot keeps getting tighter.",
+    words: ["Frustrated", "Irritated", "Annoyed", "Angry"]
+  },
+  {
+    image: "A girl holds an envelope and drops her shoulders.",
+    context: "The letter says she did not get a place in the club she wanted to join.",
+    words: ["Disappointed", "Sad", "Down", "Discouraged"]
+  },
+  {
+    image: "A boy leans back comfortably.",
+    context: "He has finished his chores and has time to sit back and listen to music.",
+    words: ["Relaxed", "At ease", "Calm", "Chill"]
+  },
+  {
+    image: "A girl holds a note card with her shoulders raised.",
+    context: "Her name will be called next to read aloud at the assembly.",
+    words: ["Nervous", "Worried", "Anxious", "Tense"]
+  },
+  {
+    image: "A boy smiles with his hand on his chest.",
+    context: "A classmate brought him the homework he missed while he was sick.",
+    words: ["Grateful", "Touched", "Pleased", "Happy"]
+  },
+  {
+    image: "A girl leans forward with a bright smile.",
+    context: "She is laughing and talking with friends at lunch.",
+    words: ["Cheerful", "Happy", "Joyful", "Lively"]
+  },
+  {
+    image: "A boy crosses his arms and presses his lips together.",
+    context: "The person beside him keeps tapping a pencil after he asked them to stop.",
+    words: ["Irritated", "Annoyed", "Frustrated", "Angry"]
+  },
+  {
+    image: "A girl sits alone and looks down.",
+    context: "Her usual friends are away, and she has nobody to sit with at lunch.",
+    words: ["Lonely", "Sad", "Down", "Glum"]
+  },
+  {
+    image: "A boy sits quietly with his eyes closed.",
+    context: "He is taking a quiet break after a noisy class.",
+    words: ["Peaceful", "Calm", "Relaxed", "At ease"]
+  },
+  {
+    image: "A girl pulls back with wide eyes.",
+    context: "A big dog she does not know suddenly barks near her.",
+    words: ["Frightened", "Panicked", "Shocked", "Nervous"]
+  },
+  {
+    image: "A boy laughs and makes a silly pose.",
+    context: "He is trying to make his friend laugh while they take a picture.",
+    words: ["Playful", "Cheerful", "Happy", "Lively"]
+  },
+  {
+    image: "A girl looks ahead with a small smile.",
+    context: "Her class planted seeds yesterday, and she thinks they might start growing soon.",
+    words: ["Hopeful", "Optimistic", "Pleased", "Happy"]
+  },
+  {
+    image: "A boy fidgets with his fingers.",
+    context: "He has been sitting for a long time and feels like getting up and moving around.",
+    words: ["Restless", "Jittery", "Uneasy", "Annoyed"]
+  },
+  {
+    image: "A girl rests her chin on her hand.",
+    context: "She has been waiting a long time with nothing to do.",
+    words: ["Bored", "Apathetic", "Restless", "Tired"]
+  },
+  {
+    image: "A boy sits with an easy smile.",
+    context: "He has finished a snack and is enjoying a quiet moment by himself.",
+    words: ["Content", "Satisfied", "At ease", "Calm"]
+  },
+  {
+    image: "A girl frowns and grips her backpack straps.",
+    context: "She is starting at a new school and is thinking about what might go wrong.",
+    words: ["Anxious", "Nervous", "Worried", "Apprehensive"]
+  },
+  {
+    image: "A boy beams with both hands above his head.",
+    context: "His team just scored the winning goal in the final seconds.",
+    words: ["Thrilled", "Excited", "Ecstatic", "Elated"]
   }
 ];
 
