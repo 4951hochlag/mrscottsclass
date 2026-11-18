@@ -14,6 +14,8 @@ const rows = [
 ];
 const columnStarts = [211, 380, 549, 718, 887, 1072, 1241, 1410, 1579, 1748];
 const rowStarts = [348, 451, 553, 656, 758, 875, 977, 1080, 1183, 1285];
+const tileWidth = 163;
+const tileHeight = 97;
 const energyRows = { low: [5, 9], medium: [3, 6], high: [0, 4] };
 const feelingColumns = { negative: [0, 4], neutral: [4, 5], positive: [5, 9] };
 const situations = [
@@ -174,8 +176,8 @@ const tiles = rows.flatMap((line, row) => line.split("|").map((word, column) => 
   tile.className = "tile";
   tile.style.left = `${columnStarts[column] / 2048 * 100}%`;
   tile.style.top = `${rowStarts[row] / 1638 * 100}%`;
-  tile.style.width = `${163 / 2048 * 100}%`;
-  tile.style.height = `${97 / 1638 * 100}%`;
+  tile.style.width = `${tileWidth / 2048 * 100}%`;
+  tile.style.height = `${tileHeight / 1638 * 100}%`;
 
   const pick = document.createElement("button");
   pick.type = "button";
@@ -191,7 +193,7 @@ const tiles = rows.flatMap((line, row) => line.split("|").map((word, column) => 
   speaker.addEventListener("click", () => speak(word));
   tile.append(pick, speaker);
   byId("words").append(tile);
-  return { tile, pick, word, row, column };
+  return { pick, word, row, column };
 }));
 
 function inside(index, range) {
@@ -205,9 +207,20 @@ function updateChart() {
   status.textContent = ready
     ? `Look for a word in the highlighted section. ${energy} energy · ${feeling} feeling.`
     : "Answer both questions to choose a word.";
-  for (const { tile, pick, word, row, column } of tiles) {
+  const highlight = byId("section-highlight");
+  highlight.hidden = !ready;
+  if (ready) {
+    const [firstRow, lastRow] = energyRows[energy];
+    const [firstColumn, lastColumn] = feelingColumns[feeling];
+    const left = columnStarts[firstColumn];
+    const top = rowStarts[firstRow];
+    highlight.style.left = `${left / 2048 * 100}%`;
+    highlight.style.top = `${top / 1638 * 100}%`;
+    highlight.style.width = `${(columnStarts[lastColumn] + tileWidth - left) / 2048 * 100}%`;
+    highlight.style.height = `${(rowStarts[lastRow] + tileHeight - top) / 1638 * 100}%`;
+  }
+  for (const { pick, word, row, column } of tiles) {
     const match = ready && inside(row, energyRows[energy]) && inside(column, feelingColumns[feeling]);
-    tile.classList.toggle("match", match);
     pick.disabled = !match;
     pick.setAttribute("aria-pressed", String(word === selected));
   }
