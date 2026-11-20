@@ -151,6 +151,16 @@ const next = byId("next");
 let practice = false;
 let person = 0;
 let selected = "";
+let lastFocused = null;
+function closeSuccess() {
+  byId("success-overlay").hidden = true;
+  if (lastFocused?.isConnected) lastFocused.focus();
+}
+function showSuccess() {
+  lastFocused = document.activeElement;
+  byId("success-overlay").hidden = false;
+  byId("success-ok").focus();
+}
 
 function speak(value) {
   const audioStatus = byId("audio-status");
@@ -227,6 +237,7 @@ function updateChart() {
 }
 
 function clearChoice() {
+  closeSuccess();
   selected = "";
   result.hidden = true;
   next.hidden = true;
@@ -242,11 +253,13 @@ function choose(word) {
       ? `${word} is one feeling that fits the clues.`
       : `You chose ${word.toLowerCase()}. Look at the clues again. One possible feeling is ${words[0].toLowerCase()}.`;
     next.hidden = false;
+    if (words.includes(word)) showSuccess();
   } else {
     result.textContent = `You chose ${word.toLowerCase()}.`;
+    showSuccess();
   }
   result.hidden = false;
-  result.focus();
+  if (byId("success-overlay").hidden) result.focus();
 }
 
 function startRound() {
@@ -280,9 +293,11 @@ next.addEventListener("click", () => {
   startRound();
   byId("hear-scenario").focus();
 });
-byId("hear-scenario").addEventListener("click", () => {
-  const { image, context } = situations[person];
-  speak(`${image} ${context}`);
+byId("hear-scenario").addEventListener("click", () => speak(byId("scenario").textContent));
+byId("describe-picture").addEventListener("click", () => speak(situations[person].image));
+byId("success-ok").addEventListener("click", closeSuccess);
+byId("success-overlay").addEventListener("keydown", event => {
+  if (event.key === "Tab") { event.preventDefault(); byId("success-ok").focus(); }
 });
 document.querySelectorAll("[data-hear]").forEach(button => {
   button.addEventListener("click", () => speak(byId(button.dataset.hear).textContent));
