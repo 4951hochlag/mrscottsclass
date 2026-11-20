@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mood Meter | Mr. Scott's Class</title>
-  <link rel="stylesheet" href="style.css?v=section-highlight">
-  <script defer src="mood-meter.js?v=broader-feedback"></script>
+  <link rel="stylesheet" href="style.css?v=success-dialog">
+  <script defer src="mood-meter.js?v=success-dialog"></script>
 </head>
 <body>
   <header><a href="../">← Social Skills</a><h1>Mood Meter</h1></header>
@@ -18,7 +18,7 @@
       <div id="practice" hidden>
         <img id="portrait" width="400" height="400" alt="">
         <p id="scenario"></p>
-        <button class="speaker" id="hear-scenario" aria-label="Hear the situation">🔊</button>
+        <div class="audio-actions"><button type="button" id="describe-picture">🔊 Describe picture</button><button type="button" id="hear-scenario">🔊 Read situation</button></div>
       </div>
       <div class="questions">
         <fieldset>
@@ -58,6 +58,7 @@
       <p id="result" role="status" tabindex="-1" hidden></p>
       <button id="next" hidden>Next person</button>
     </section>
+    <div id="success-overlay" class="success-overlay" hidden><div class="success-dialog" role="dialog" aria-modal="true" aria-labelledby="success-title" aria-describedby="success-message"><h2 id="success-title">Great job!</h2><p id="success-message">You chose an emotion that matches the clues!</p><button type="button" id="success-ok">OK</button></div></div>
   </main>
 </body>
 </html>
