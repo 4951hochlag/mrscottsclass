@@ -45,3 +45,4 @@ legend { font-weight: bold; }
 .tile .pick[aria-pressed="true"] { box-shadow: inset 0 0 0 4px #172033; background: transparent; }
 .scroll-tip { display: none; }
 @media (max-width: 1035px) { .scroll-tip { display: block; } }
+\n.audio-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.audio-actions button { font-size: 16px; }\n.success-overlay { position: fixed; inset: 0; z-index: 1000; background: #17203380; display: grid; place-items: center; padding: 20px; }\n.success-dialog { width: min(420px, 100%); padding: 30px 24px; background: #dcfce7; color: #166534; border: 3px solid #16a34a; border-radius: 20px; text-align: center; box-shadow: 0 12px 40px #0004; }\n.success-dialog h2 { font-size: 2rem; margin: 0 0 12px; }\n.success-dialog p { margin: 0 0 22px; font-size: 1.15rem; }\n#success-ok { min-width: 110px; background: #15803d; border-color: #15803d; color: white; font-weight: bold; }\n#success-ok:hover { background: #166534; }\n
