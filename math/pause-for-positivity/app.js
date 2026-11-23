@@ -91,8 +91,28 @@ let walletTriesAtStart=0,affordTriesAtStart=0;
 function cashierEnough(yes){if($('cashierEnough').hidden||stage!==1)return;affordTries++;if(yes!==(cashierPaid>=sum(basket)))return feedback('cashierFeedback','Compare the amount received with the order total. Try again.',false);affordCorrect++;transactionSteps.push({name:'Enough money received '+cashierRounds,attempts:affordTries-affordTriesAtStart,correct:true,answer:yes?'Yes':'No'});if(!yes){feedback('cashierFeedback','Correct. Ask the customer for more money.',true);nextCashierPayment()}else{changeDue=cashierPaid-sum(basket);$('cashierStage').hidden=true;stage=2;$('changeBox').hidden=false;$('changeAmount').hidden=true;$('changeFeedback').textContent='';$('changePrompt').textContent='Does the customer need change?';feedback('cashierFeedback','The customer gave enough. Now decide if they need change.',true);}}
 $('cashierYes').onclick=()=>cashierEnough(true);$('cashierNo').onclick=()=>cashierEnough(false);
 
-function showWallet(){$('changePrompt').textContent='Should you receive change?';walletCount++;wallet=randomWallet(sum(basket),walletCount>=4);coins=[];$('walletTotal').value='';$('walletFeedback').textContent='';$('affordStage').hidden=true;$('walletStage').hidden=false;$('payStage').hidden=true;$('checkMoney').hidden=true;$('changeBox').hidden=true;$('walletMoney').innerHTML=wallet.map(moneyVisual).join('');$('paymentPrompt').textContent='Count the money in your wallet. Your order costs '+fmt(sum(basket))+'.';}
+function showWallet(){$('changePrompt').textContent='Should you receive change?';walletCount++;wallet=randomWallet(sum(basket),walletCount>=4);coins=[];$('walletTotal').value='';$('walletFeedback').textContent='';$('affordStage').hidden=true;$('walletStage').hidden=false;$('payStage').hidden=true;$('checkMoney').hidden=true;$('changeBox').hidden=true;$('walletMoney').innerHTML = wallet.map(value =>
+  '<div class="wallet-piece">' + moneyVisual(value) +
+  '<span class="wallet-calculator-value" hidden>' + (value / 100).toFixed(2) + '</span></div>'
+).join('');
+setWalletCalculatorValues(false);$('paymentPrompt').textContent='Count the money in your wallet. Your order costs '+fmt(sum(basket))+'.';}
 function startPayment(){$('payment').hidden=false;paymentHelp();const cost=sum(basket);$('receipt').innerHTML='<ul>'+basket.map(x=>'<li>'+x[0]+' — '+fmt(x[1])+'</li>').join('')+'</ul><strong>Total checked: '+fmt(cost)+'</strong>';walletCount=0;walletTries=0;walletCorrect=0;affordTries=0;affordCorrect=0;paidTries=0;paidCorrect=0;changeDecisionTries=0;changeDecisionCorrect=0;changeTries=0;changeCorrect=0;$('moneyFeedback').textContent='';$('cashierStage').hidden=!cashier();$('customerPayment').hidden=cashier();if(cashier())startCashierPayment();else showWallet()}
+const walletValuesButton = $('walletValuesButton');
+if (walletValuesButton) {
+  walletValuesButton.onclick = () => {
+    setWalletCalculatorValues(walletValuesButton.getAttribute('aria-expanded') === 'false');
+  };
+}
+
+function setWalletCalculatorValues(visible) {
+  if (!walletValuesButton) return;
+  walletValuesButton.setAttribute('aria-expanded', String(visible));
+  walletValuesButton.textContent = visible ? 'Hide calculator values' : 'Show calculator values';
+  $('walletMoney').querySelectorAll('.wallet-calculator-value').forEach(label => {
+    label.hidden = !visible;
+  });
+}
+
 $('checkWallet').onclick=()=>{walletTries++;if(Math.round(Number($('walletTotal').value)*100)!==moneySum(wallet)||$('walletTotal').value==='')return feedback('walletFeedback',specificError('money'),false);walletCorrect++;feedback('walletFeedback','Correct! Now decide if you have enough.',true);$('affordStage').hidden=false};
 function answerAfford(yes){if(cashier()||$('affordStage').hidden)return;affordTries++;const enough=moneySum(wallet)>=sum(basket);if(yes!==enough)return feedback('walletFeedback','Try again. Compare your wallet with the order total.',false);affordCorrect++;if(!enough){feedback('walletFeedback','Correct. You need another wallet.',true);showWallet()}else{feedback('walletFeedback','Correct. Choose money from your wallet to pay.',true);$('walletStage').hidden=true;$('payStage').hidden=false;$('checkMoney').hidden=false;$('coins').innerHTML=wallet.map((v,i)=>'<button class="money-choice" data-index="'+i+'" aria-pressed="false">'+moneyVisual(v)+'</button>').join('');document.querySelectorAll('[data-index]').forEach(b=>b.onclick=()=>{if(stage!==1)return;b.classList.toggle('chosen');b.setAttribute('aria-pressed',b.classList.contains('chosen')?'true':'false');renderCoins()});renderCoins()}}
 $('affordYes').onclick=()=>answerAfford(true);$('affordNo').onclick=()=>answerAfford(false);
