@@ -10,7 +10,24 @@ function speak(t,asCustomer=false){if(!window.speechSynthesis)return alert('Audi
 function feedback(id,t,good){$(id).textContent=t;$(id).style.color=good?'#176b37':'#a42c2c'}
 function renderMenu(){const groups=[['Drinks',items.slice(0,8),0],['Food',items.slice(8,13),8],['Extras',items.slice(13),13]];$('menu').innerHTML=groups.map(([name,group,offset])=>'<details class="menu-group"><summary>'+name+'</summary><div class="menu-items">'+group.map((x,j)=>'<div class="item"><img src="images/'+x[0].toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.jpg" alt="'+x[0]+'" loading="lazy" style="width:100%;max-width:145px;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;margin:0 auto 8px"><strong>'+x[0]+'</strong><p>'+fmt(x[1])+'</p><button data-add="'+(offset+j)+'">+ Add</button><button data-say="'+(offset+j)+'">🔊</button></div>').join('')+'</div></details>').join('');document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{if(stage)return;basket.push(items[Number(b.dataset.add)]);renderBasket()});document.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>{const x=items[Number(b.dataset.say)];speak(x[0]+', '+fmt(x[1]))})}
 document.addEventListener('click',e=>{if(e.target.id==='checkTotal')checkTotalButton()});
-function renderBasket(){$('basket').innerHTML=basket.length?'<strong>Your order</strong><ul>'+basket.map(x=>'<li><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong></li>').join('')+'</ul><label for="orderTotal">Write the total ($):</label> <input id="orderTotal" type="number" min="0" step="0.05" inputmode="decimal" placeholder="0.00"> <button id="checkTotal" type="button">Check total</button><div id="additionHelp" class="learning-help"></div>':'Your order: Nothing selected';renderAdditionHelp();$('removeLast').disabled=stage!==0||basket.length===0;$('clear').disabled=stage!==0||basket.length===0}
+function renderBasket() {
+  const orderPanel = $('basket');
+  const orderActions = $('checkOrder').parentElement;
+  const hasItems = basket.length > 0;
+
+  orderPanel.innerHTML = hasItems
+    ? '<strong>Your order</strong><ul>' + basket.map(x => '<li><span>' + x[0] + '</span><strong>' + fmt(x[1]) + '</strong></li>').join('') + '</ul>'
+    : 'Your order: Nothing selected';
+  orderPanel.append(orderActions);
+
+  if (hasItems) {
+    orderPanel.insertAdjacentHTML('beforeend', '<div><label for="orderTotal">Write the total ($):</label> <input id="orderTotal" type="number" min="0" step="0.05" inputmode="decimal" placeholder="0.00"> <button id="checkTotal" type="button">Check total</button><div id="additionHelp" class="learning-help"></div></div>');
+    renderAdditionHelp();
+  }
+
+  $('removeLast').disabled = stage !== 0 || !hasItems;
+  $('clear').disabled = stage !== 0 || !hasItems;
+}
 function helpButton(kind){if(lev()===3)return '';return '<button type="button" class="help-button" data-help="'+kind+'">💡 '+(kind==='addition'?'Show addition help':kind==='numberLine'?'Show number line':'Show hint')+'</button>'}
 function renderAdditionHelp(){const el=$('additionHelp');if(!el)return;el.innerHTML=helpButton('addition');}
 function helpText(kind){if(kind==='addition'){const parts=basket.map(x=>fmt(x[1]));return '<strong>Add the item prices:</strong><div class="price-equation">'+parts.join(' + ')+' = ?</div><p>Try adding the dollars first, then the cents. Write your answer above.</p>'}if(kind==='numberLine'){const max=lev()===1?20:30;return '<strong>Number line (dollars)</strong><div class="number-line">'+Array.from({length:max+1},(_,i)=>'<span>'+i+'</span>').join('')+'</div><p>Start at the smaller amount. Count forward to find the difference. For cents, count by 5¢ or 25¢.</p>'}return '<strong>Hint:</strong> Compare the amount you have with the cost. Count dollars first, then cents. If you need change, subtract the cost from the amount paid.'}
