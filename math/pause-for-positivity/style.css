@@ -113,13 +113,15 @@
   min-width: 88px;
 }
 
-#walletMoney .wallet-piece {
+.wallet-piece,
+.money-with-value {
   display: grid;
   justify-items: center;
   gap: 4px;
 }
 
-.wallet-calculator-value {
+.wallet-calculator-value,
+.money-calculator-value {
   font-weight: bold;
   font-variant-numeric: tabular-nums;
 }
