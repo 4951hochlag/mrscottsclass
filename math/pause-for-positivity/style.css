@@ -63,7 +63,7 @@
 .order-columns .order-panel{position:sticky;top:12px;min-width:0}
 .order-columns #basket{position:static}
 .order-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:4px;margin-top:10px}
-.order-actions button{margin:3px;font-size:.95rem}
+.order-actions button{margin:3px}
 @media(max-width:760px){.order-columns .order-panel{position:static}}
 
 /* Neutral customer silhouette: no visual/voice gender mismatch */
