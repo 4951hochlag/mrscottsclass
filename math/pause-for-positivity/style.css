@@ -123,3 +123,7 @@
   font-weight: bold;
   font-variant-numeric: tabular-nums;
 }
+
+#practiceHome:has(#practiceChoices[hidden]) > h2 {
+  display: none;
+}
