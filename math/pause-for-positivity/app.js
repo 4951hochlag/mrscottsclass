@@ -11,16 +11,22 @@ const resultDialog = document.createElement('dialog');
 resultDialog.id = 'cafeResult';
 resultDialog.setAttribute('aria-labelledby', 'cafeResultTitle');
 resultDialog.setAttribute('aria-describedby', 'cafeResultMessage');
-resultDialog.innerHTML = '<h2 id="cafeResultTitle"></h2><p id="cafeResultMessage"></p><form method="dialog"><button type="submit" autofocus>OK</button></form>';
+resultDialog.innerHTML = '<h2 id="cafeResultTitle"></h2><p id="cafeResultMessage"></p><form method="dialog"><button type="submit" value="ok" autofocus>OK</button></form>';
 document.body.append(resultDialog);
 
-function feedback(id, message, correct) {
+function feedback(id, message, correct, onOkay) {
   $(id).textContent = '';
   resultDialog.dataset.correct = String(correct);
   $('cafeResultTitle').textContent = correct ? 'Good job!' : 'Try again';
   const detail = message.replace(/^Try again\.\s*|\s*Try again\.$/gi, '');
   $('cafeResultMessage').textContent = detail;
   $('cafeResultMessage').hidden = !detail;
+  resultDialog.returnValue = '';
+  if (onOkay) {
+    resultDialog.addEventListener('close', () => {
+      if (resultDialog.returnValue === 'ok') onOkay();
+    }, { once: true });
+  }
   resultDialog.showModal();
 }
 function renderMenu(){const groups=[['Drinks',items.slice(0,8),0],['Food',items.slice(8,13),8],['Extras',items.slice(13),13]];$('menu').innerHTML=groups.map(([name,group,offset])=>'<details class="menu-group"><summary>'+name+'</summary><div class="menu-items">'+group.map((x,j)=>'<div class="item"><img src="images/'+x[0].toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.jpg" alt="'+x[0]+'" loading="lazy" style="width:100%;max-width:145px;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;margin:0 auto 8px"><strong>'+x[0]+'</strong><p>'+fmt(x[1])+'</p><button data-add="'+(offset+j)+'">+ Add</button><button data-say="'+(offset+j)+'">🔊</button></div>').join('')+'</div></details>').join('');document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{if(stage)return;basket.push(items[Number(b.dataset.add)]);renderBasket()});document.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>{const x=items[Number(b.dataset.say)];speak(x[0]+', '+fmt(x[1]))})}
@@ -51,7 +57,12 @@ function paymentHelp(){if(lev()===3)return;const target=$('payment');if(!target)
 function specificError(type){if(lev()===3)return type==='total'?'Check your total. Add the prices and try again.':'Try again.';if(type==='items')return 'Check each item in the blue customer order. Do the names and quantities match your selections?';if(type==='total')return 'Add each price in Your order. Check the dollars and cents separately.';if(type==='change')return 'Subtract the order cost from the money paid. Count forward using the number line if needed.';return 'Count the bills and coins one at a time, starting with the largest value.'}
 function checkTotalButton(){if(stage!==0)return;if(!freeChoice()&&!orderItemChecked){checkOrder(false);if(!orderItemChecked)return;}checkOrder();}
 function newOrder(){stage=0;basket=[];coins=[];attempts=[0,0,0];orderItemTries=0;orderTotalTries=0;orderItemsCorrect=false;orderItemChecked=false;orderTotalCorrect=false;transactionSteps=[];helpUsage={addition:0,numberLine:0,hint:0};const pool=mainItems.slice();wanted=[];activeCustomer=0;const itemCount=lev()===1?1+rand(2):lev();for(let i=0;i<itemCount;i++)wanted.push(pool.splice(rand(pool.length),1)[0]);if(lev()===3)wanted.push(extras[rand(extras.length)]);$('shoppingStyleLabel').hidden=cashier();$('request').textContent=freeChoice()?'Choose anything you would like from the menu.':'I would like '+naturalOrder(wanted)+', please.';$('instructions').textContent=cashier()?'Take the order, collect payment, and calculate change.':(freeChoice()?'Choose your own items, add their prices, and pay for your order.':'Select the requested items and pay for your order.');$('orderFeedback').textContent='';$('moneyFeedback').textContent='';$('changeFeedback').textContent='';$('cashierStage').hidden=true;$('customerPayment').hidden=false;$('payment').hidden=true;$('changeBox').hidden=true;$('checkOrder').disabled=false;$('clear').disabled=false;$('removeLast').disabled=true;$('next').disabled=true;$('checkMoney').disabled=false;$('checkChange').disabled=false;renderMenu();renderBasket();updateSend()}
-function checkOrder(showItemSuccess=true){attempts[0]++;if(!freeChoice()&&!orderItemChecked){orderItemTries++;if(basket.map(x=>x[0]).sort().join('|')!==wanted.map(x=>x[0]).sort().join('|'))return feedback('orderFeedback',specificError('items'),false);orderItemsCorrect=true;orderItemChecked=true;if(showItemSuccess)feedback('orderFeedback','Your order is correct. Now check the total.',true);return}if(freeChoice()&&!basket.length)return feedback('orderFeedback','Choose at least one item before checking out.',false);orderTotalTries++;const entered=$('orderTotal');if(!entered||entered.value.trim()===''||Math.round(Number(entered.value)*100)!==sum(basket))return feedback('orderFeedback',specificError('total'),false);orderTotalCorrect=true;feedback('orderFeedback','Your total is correct. You’re ready for payment.',true);stage=1;$('checkOrder').disabled=true;$('clear').disabled=true;$('removeLast').disabled=true;startPayment()}
+function checkOrder(showItemSuccess=true){attempts[0]++;if(!freeChoice()&&!orderItemChecked){orderItemTries++;if(basket.map(x=>x[0]).sort().join('|')!==wanted.map(x=>x[0]).sort().join('|'))return feedback('orderFeedback',specificError('items'),false);orderItemsCorrect=true;orderItemChecked=true;if(showItemSuccess)feedback('orderFeedback','Your order is correct. Now check the total.',true);return}if(freeChoice()&&!basket.length)return feedback('orderFeedback','Choose at least one item before checking out.',false);orderTotalTries++;const entered=$('orderTotal');if(!entered||entered.value.trim()===''||Math.round(Number(entered.value)*100)!==sum(basket))return feedback('orderFeedback',specificError('total'),false);orderTotalCorrect=true;stage=1;$('checkOrder').disabled=true;$('clear').disabled=true;$('removeLast').disabled=true;startPayment();
+  feedback('orderFeedback', 'Your total is correct. You’re ready for payment.', true, () => {
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    $('payment').scrollIntoView({ behavior, block: 'start' });
+  });
+}
 
 const DENOMS = [
   {v: 2000, n: '$20 bill', image: '20-dollar', kind: 'bill'},
