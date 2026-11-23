@@ -140,7 +140,7 @@ $('speak').onclick=()=>speak($('request').textContent,true);$('removeLast').oncl
 let practiceSkill='',practiceQ=null,practiceStats={};
 const practiceNames={'count':'Count the Money','enough':'Do I Have Enough?','pay':'Choose How to Pay','change':'Making Change'};
 $('practiceChoices').innerHTML=Object.entries(practiceNames).map(([k,v])=>'<button data-skill="'+k+'">'+v+'</button>').join('');
-$('practiceToggle').onclick=()=>{const showing=$('practiceHome').hidden;$('practiceHome').hidden=!showing;$('cafeMain').hidden=showing;$('practiceToggle').textContent=showing?'Return to Café Purchase':'Practise Your Money Skills';};
+$('practiceToggle').onclick=()=>{const showing=$('practiceHome').hidden;if(showing){$('practiceActivity').hidden=true;$('practiceChoices').hidden=false;}$('practiceHome').hidden=!showing;$('cafeMain').hidden=showing;$('practiceToggle').textContent=showing?'Return to Café Purchase':'Practise Your Money Skills';};
 document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>{practiceSkill=b.dataset.skill;$('practiceChoices').hidden=true;$('practiceActivity').hidden=false;$('practiceTitle').textContent=practiceNames[practiceSkill];practiceStats[practiceSkill]??={questions:0,attempts:0,firstCorrect:0};nextPractice()});
 $('practiceBack').onclick=()=>{$('practiceActivity').hidden=true;$('practiceChoices').hidden=false};
 $('practiceNext').onclick=nextPractice;
