@@ -112,3 +112,14 @@
 #cafeResult button {
   min-width: 88px;
 }
+
+#walletMoney .wallet-piece {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.wallet-calculator-value {
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
