@@ -102,26 +102,28 @@ let walletTriesAtStart=0,affordTriesAtStart=0;
 function cashierEnough(yes){if($('cashierEnough').hidden||stage!==1)return;affordTries++;if(yes!==(cashierPaid>=sum(basket)))return feedback('cashierFeedback','Compare the amount received with the order total. Try again.',false);affordCorrect++;transactionSteps.push({name:'Enough money received '+cashierRounds,attempts:affordTries-affordTriesAtStart,correct:true,answer:yes?'Yes':'No'});if(!yes){feedback('cashierFeedback','Correct. Ask the customer for more money.',true);nextCashierPayment()}else{changeDue=cashierPaid-sum(basket);$('cashierStage').hidden=true;stage=2;$('changeBox').hidden=false;$('changeAmount').hidden=true;$('changeFeedback').textContent='';$('changePrompt').textContent='Does the customer need change?';feedback('cashierFeedback','The customer gave enough. Now decide if they need change.',true);}}
 $('cashierYes').onclick=()=>cashierEnough(true);$('cashierNo').onclick=()=>cashierEnough(false);
 
-function showWallet(){$('changePrompt').textContent='Should you receive change?';walletCount++;wallet=randomWallet(sum(basket),walletCount>=4);coins=[];$('walletTotal').value='';$('walletFeedback').textContent='';$('affordStage').hidden=true;$('walletStage').hidden=false;$('payStage').hidden=true;$('checkMoney').hidden=true;$('changeBox').hidden=true;$('walletMoney').innerHTML = wallet.map(value =>
-  '<div class="wallet-piece">' + moneyVisual(value) +
-  '<span class="wallet-calculator-value" hidden>' + (value / 100).toFixed(2) + '</span></div>'
-).join('');
-setWalletCalculatorValues(false);$('paymentPrompt').textContent='Count the money in your wallet. Your order costs '+fmt(sum(basket))+'.';}
+function showWallet(){$('changePrompt').textContent='Should you receive change?';walletCount++;wallet=randomWallet(sum(basket),walletCount>=4);coins=[];$('walletTotal').value='';$('walletFeedback').textContent='';$('affordStage').hidden=true;$('walletStage').hidden=false;$('payStage').hidden=true;$('checkMoney').hidden=true;$('changeBox').hidden=true;$('walletMoney').innerHTML = wallet.map(moneyWithCalculatorValue).join('');
+setCalculatorValues($('walletValuesButton'), false);$('paymentPrompt').textContent='Count the money in your wallet. Your order costs '+fmt(sum(basket))+'.';}
 function startPayment(){$('payment').hidden=false;paymentHelp();const cost=sum(basket);$('receipt').innerHTML='<ul>'+basket.map(x=>'<li>'+x[0]+' — '+fmt(x[1])+'</li>').join('')+'</ul><strong>Total checked: '+fmt(cost)+'</strong>';walletCount=0;walletTries=0;walletCorrect=0;affordTries=0;affordCorrect=0;paidTries=0;paidCorrect=0;changeDecisionTries=0;changeDecisionCorrect=0;changeTries=0;changeCorrect=0;$('moneyFeedback').textContent='';$('cashierStage').hidden=!cashier();$('customerPayment').hidden=cashier();if(cashier())startCashierPayment();else showWallet()}
-const walletValuesButton = $('walletValuesButton');
-if (walletValuesButton) {
-  walletValuesButton.onclick = () => {
-    setWalletCalculatorValues(walletValuesButton.getAttribute('aria-expanded') === 'false');
-  };
+function moneyWithCalculatorValue(value) {
+  return '<div class="money-with-value">' + moneyVisual(value) +
+    '<span class="money-calculator-value" hidden>' + (value / 100).toFixed(2) + '</span></div>';
 }
 
-function setWalletCalculatorValues(visible) {
-  if (!walletValuesButton) return;
-  walletValuesButton.setAttribute('aria-expanded', String(visible));
-  walletValuesButton.textContent = visible ? 'Hide calculator values' : 'Show calculator values';
-  $('walletMoney').querySelectorAll('.wallet-calculator-value').forEach(label => {
+function setCalculatorValues(button, visible) {
+  if (!button) return;
+  button.setAttribute('aria-expanded', String(visible));
+  button.textContent = visible ? 'Hide calculator values' : 'Show calculator values';
+  $(button.getAttribute('aria-controls')).querySelectorAll('.money-calculator-value').forEach(label => {
     label.hidden = !visible;
   });
+}
+
+for (const id of ['walletValuesButton', 'practiceValuesButton']) {
+  const button = $(id);
+  if (button) {
+    button.onclick = () => setCalculatorValues(button, button.getAttribute('aria-expanded') === 'false');
+  }
 }
 
 $('checkWallet').onclick=()=>{walletTries++;if(Math.round(Number($('walletTotal').value)*100)!==moneySum(wallet)||$('walletTotal').value==='')return feedback('walletFeedback',specificError('money'),false);walletCorrect++;feedback('walletFeedback','Correct! Now decide if you have enough.',true);$('affordStage').hidden=false};
@@ -144,6 +146,12 @@ $('practiceBack').onclick=()=>{$('practiceActivity').hidden=true;$('practiceChoi
 $('practiceNext').onclick=nextPractice;
 function nextPractice(){const ds=moneySet(lev()).map(x=>x.v),cost=(2+rand(12))*50;let w=Array.from({length:2+rand(lev()+3)},()=>ds[rand(ds.length)]);if(practiceSkill==='pay'){w=[500,200,200,100,100,25,25];}const total=moneySum(w);practiceQ={w,cost,total,tries:0,selected:[],done:false};$('practiceQuestion').textContent=practiceSkill==='count'?'How much money do you see?':practiceSkill==='enough'?'Count the wallet. The item costs '+fmt(cost)+'. Do you have enough?':practiceSkill==='pay'?'Choose bills and coins to pay at least '+fmt(cost)+'. Then enter the amount selected.':'You pay '+fmt(total)+ ' for an item costing '+fmt(Math.min(cost,total))+'. How much change should you get?';$('practiceMoney').innerHTML=(practiceSkill === 'pay'
     ? w.map((v, i) => '<button type="button" data-practice-coin="'+i+'" class="practice-coin" aria-pressed="false">'+moneyVisual(v)+'</button>')
-    : w.map(moneyVisual)).join('');$('practiceControls').innerHTML=practiceSkill==='enough'?'<label>Wallet total ($) <input id="practiceInput" type="number" step=".05"></label><button id="practiceCheck">Check total</button><div id="practiceYN" hidden><button id="practiceYes">Yes</button><button id="practiceNo">No</button></div>':'<label>Answer ($) <input id="practiceInput" type="number" step=".05"></label><button id="practiceCheck">Check answer</button>';$('practiceFeedback').textContent='';$('practiceNext').disabled=true;document.querySelectorAll('[data-practice-coin]').forEach(b=>b.onclick=()=>{b.setAttribute('aria-pressed', b.classList.toggle('chosen'));practiceQ.selected=[...document.querySelectorAll('[data-practice-coin].chosen')].map(x=>w[Number(x.dataset.practiceCoin)])});$('practiceCheck').onclick=()=>{practiceQ.tries++;practiceStats[practiceSkill].attempts++;const value=$('practiceInput').value,amount=value===''?NaN:Math.round(Number(value)*100);const correct=practiceSkill==='count'||practiceSkill==='enough'?total:practiceSkill==='pay'?moneySum(practiceQ.selected):total-Math.min(cost,total);if(amount!==correct||(practiceSkill==='pay'&&correct<cost)){feedback('practiceFeedback','Try again. Count carefully.',false);return}if(practiceSkill==='enough'){$('practiceYN').hidden=false;feedback('practiceFeedback','Correct. Now answer Yes or No.',true)}else finishPractice()};if(practiceSkill==='enough'){$('practiceYes').onclick=()=>answerPracticeEnough(true);$('practiceNo').onclick=()=>answerPracticeEnough(false)}}
+    : w.map(practiceSkill === 'count' ? moneyWithCalculatorValue : moneyVisual)).join('');
+  const valuesButton = $('practiceValuesButton');
+  if (valuesButton) {
+    valuesButton.hidden = practiceSkill !== 'count';
+    setCalculatorValues(valuesButton, false);
+  }
+  $('practiceControls').innerHTML=practiceSkill==='enough'?'<label>Wallet total ($) <input id="practiceInput" type="number" step=".05"></label><button id="practiceCheck">Check total</button><div id="practiceYN" hidden><button id="practiceYes">Yes</button><button id="practiceNo">No</button></div>':'<label>Answer ($) <input id="practiceInput" type="number" step=".05"></label><button id="practiceCheck">Check answer</button>';$('practiceFeedback').textContent='';$('practiceNext').disabled=true;document.querySelectorAll('[data-practice-coin]').forEach(b=>b.onclick=()=>{b.setAttribute('aria-pressed', b.classList.toggle('chosen'));practiceQ.selected=[...document.querySelectorAll('[data-practice-coin].chosen')].map(x=>w[Number(x.dataset.practiceCoin)])});$('practiceCheck').onclick=()=>{practiceQ.tries++;practiceStats[practiceSkill].attempts++;const value=$('practiceInput').value,amount=value===''?NaN:Math.round(Number(value)*100);const correct=practiceSkill==='count'||practiceSkill==='enough'?total:practiceSkill==='pay'?moneySum(practiceQ.selected):total-Math.min(cost,total);if(amount!==correct||(practiceSkill==='pay'&&correct<cost)){feedback('practiceFeedback','Try again. Count carefully.',false);return}if(practiceSkill==='enough'){$('practiceYN').hidden=false;feedback('practiceFeedback','Correct. Now answer Yes or No.',true)}else finishPractice()};if(practiceSkill==='enough'){$('practiceYes').onclick=()=>answerPracticeEnough(true);$('practiceNo').onclick=()=>answerPracticeEnough(false)}}
 function answerPracticeEnough(yes){practiceQ.tries++;practiceStats[practiceSkill].attempts++;if(yes!==(practiceQ.total>=practiceQ.cost))return feedback('practiceFeedback','Try again. Compare the amounts.',false);finishPractice()}
 function finishPractice(){if(practiceQ.done)return;practiceQ.done=true;practiceStats[practiceSkill].questions++;if(typeof updatePracticeSend==='function')updatePracticeSend();if(practiceQ.tries===(practiceSkill==='enough'?2:1))practiceStats[practiceSkill].firstCorrect++;feedback('practiceFeedback','Your answer is correct.',true);$('practiceNext').disabled=false;$('practiceProgress').textContent=practiceNames[practiceSkill]+': '+practiceStats[practiceSkill].questions+' completed; '+practiceStats[practiceSkill].firstCorrect+' correct without retries.'}
