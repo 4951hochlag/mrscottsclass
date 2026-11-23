@@ -69,3 +69,10 @@
 /* Neutral customer silhouette: no visual/voice gender mismatch */
 #customerPortrait{display:flex;align-items:center;justify-content:center;background:#e4e9ed;color:#526577;overflow:hidden}
 #customerPortrait svg{width:88%;height:88%;display:block}
+
+#checkOrder,
+#checkTotal {
+  background: #21643e;
+  border-color: #21643e;
+  color: #fff;
+}
