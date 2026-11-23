@@ -76,3 +76,39 @@
   border-color: #21643e;
   color: #fff;
 }
+
+#cafeResult {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 24px;
+  border: 2px solid #a42c2c;
+  border-radius: 16px;
+  background: #fff5f4;
+  color: #30241d;
+  text-align: center;
+}
+
+#cafeResult[data-correct="true"] {
+  border-color: #21643e;
+  background: #edf8f0;
+}
+
+#cafeResult::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+#cafeResultTitle {
+  margin: 0 0 12px;
+}
+
+#cafeResultMessage {
+  margin: 0 0 16px;
+}
+
+#cafeResult button {
+  min-width: 88px;
+}
