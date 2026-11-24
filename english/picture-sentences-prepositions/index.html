@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Picture Sentences: Prepositions | Mr. Scott's Class</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f6f8fc; color: #172033; }
+    header { text-align: center; background: white; padding: 26px 16px; border-bottom: 1px solid #e4e8f0; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 6vw, 3rem); }
+    h2 { margin-top: 0; }
+    main { width: min(840px, 94%); margin: 24px auto; }
+    .back { color: #263b65; font-weight: 700; }
+    .card { background: white; border: 2px solid #e3e8f1; border-radius: 20px; padding: clamp(16px, 4vw, 28px); margin: 18px 0; box-shadow: 0 5px 14px #17203312; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .center { justify-content: center; text-align: center; }
+    .progress { justify-content: space-between; color: #526078; }
+    button { min-height: 48px; border: 2px solid #aebfe6; border-radius: 12px; padding: 8px 14px; font: inherit; font-weight: bold; color: #243c69; background: #eef3ff; cursor: pointer; }
+    button.primary { color: white; background: #244d9b; border-color: #244d9b; }
+    button:disabled { cursor: default; }
+    :focus-visible { outline: 3px solid #3559a8; outline-offset: 3px; }
+    img { display: block; margin: 12px auto; width: 100%; height: min(35vh, 280px); object-fit: contain; }
+    .prompt { margin: 14px 0; font-size: clamp(1.2rem, 4vw, 1.65rem); font-weight: bold; }
+    .blank { display: inline-block; min-width: 6ch; border-bottom: 2px solid currentColor; }
+    label { display: block; font-weight: bold; margin: 12px 0 8px; }
+    textarea { width: 100%; min-height: 90px; resize: vertical; border: 2px solid #aeb8c8; border-radius: 12px; padding: 12px; font: inherit; font-size: 1.2rem; }
+    .word-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .word-bank span { background: #eef3ff; border-radius: 8px; padding: 6px 10px; }
+    .feedback { min-height: 1.4em; text-align: center; font-weight: bold; margin: 12px 0; }
+    .good { color: #12713a; }
+    .retry { color: #9b2929; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header><h1>Picture Sentences: Prepositions</h1></header>
+  <main>
+    <a class="back" href="../">Back to English</a>
+
+    <section id="setup" class="card">
+      <h2 id="setup-heading" tabindex="-1">Choose an activity</h2>
+      <div class="row">
+        <button class="primary" id="choose-mode" type="button">Choose the preposition</button>
+        <button class="primary" id="write-mode" type="button">Write the sentence</button>
+      </div>
+    </section>
+
+    <section id="practice" class="card" hidden>
+      <div class="row progress">
+        <strong id="progress"></strong>
+        <button id="change-mode" type="button">Change activity</button>
+      </div>
+      <img id="picture" alt="">
+      <p id="image-error" class="feedback retry" role="status" hidden>This picture could not load.</p>
+      <h2 id="question" class="row center prompt">
+        <span id="prompt" tabindex="-1"></span>
+        <button id="hear-prompt" type="button" aria-label="Hear the prompt">🔊</button>
+      </h2>
+      <div id="choices" class="row center" aria-label="Preposition choices"></div>
+      <form id="writing" hidden>
+        <label for="answer">Write a complete sentence.</label>
+        <textarea id="answer" rows="2" spellcheck="true"></textarea>
+        <div id="word-bank" class="word-bank" hidden></div>
+        <div class="row">
+          <button id="check" class="primary" type="submit">Check sentence</button>
+          <button id="bank-toggle" type="button" aria-controls="word-bank" aria-expanded="false">Show word bank</button>
+        </div>
+      </form>
+      <p id="feedback" class="feedback" role="status"></p>
+      <div class="row center">
+        <button id="hear-sentence" type="button" hidden>🔊 Hear the sentence</button>
+        <button id="next" class="primary" type="button" hidden>Next picture</button>
+      </div>
+    </section>
+
+    <section id="finished" class="card" hidden>
+      <h2 id="finished-heading" tabindex="-1">Round complete</h2>
+      <p>You reached the end of this round.</p>
+      <div class="row">
+        <button id="again" class="primary" type="button">Practise again</button>
+        <button id="finish-change" type="button">Change activity</button>
+      </div>
+    </section>
+  </main>
+  <script>
+    const groups = {
+      ball: ['ball_table_15_images', 'a ball and a table'],
+      bench: ['boy_girl_bench_14_no_text', 'two children and a bench'],
+      cat: ['cat_box_15_images', 'a cat and a box'],
+      bear: ['teddy_bear_chair_15_images', 'a teddy bear and a chair']
+    };
+
+    // Each image has its own subject and reference objects, especially for "between".
+    const scenes = [
+      ['ball', '01_on.jpg', 'The ball is', 'on', 'the table'],
+      ['ball', '02_under.jpg', 'The ball is', 'under', 'the table'],
+      ['ball', '03_beside.jpg', 'The ball is', 'beside', 'the table'],
+      ['ball', '04_behind.jpg', 'The ball is', 'behind', 'the table'],
+      ['ball', '05_in_front_of.jpg', 'The ball is', 'in front of', 'the table'],
+      ['ball', '06_between.jpg', 'The ball is', 'between', 'the two tables'],
+      ['bench', '01_on.jpg', 'The children are', 'on', 'the bench'],
+      ['bench', '02_under.jpg', 'The boy is', 'under', 'the bench'],
+      ['bench', '03_beside.jpg', 'The girl is', 'beside', 'the bench'],
+      ['bench', '04_behind.jpg', 'The boy is', 'behind', 'the girl'],
+      ['bench', '05_in_front_of.jpg', 'The girl is', 'in front of', 'the boy'],
+      ['bench', '06_between.jpg', 'The bench is', 'between', 'the two children'],
+      ['cat', 'cat_box_01.jpg', 'The cat is', 'in', 'the box'],
+      ['cat', 'cat_box_02.jpg', 'The cat is', 'on', 'the box'],
+      ['cat', 'cat_box_03.jpg', 'The cat is', 'under', 'the box'],
+      ['cat', 'cat_box_04.jpg', 'The cat is', 'beside', 'the box'],
+      ['cat', 'cat_box_05.jpg', 'The cat is', 'behind', 'the box'],
+      ['cat', 'cat_box_06.jpg', 'The cat is', 'in front of', 'the box'],
+      ['cat', 'cat_box_07.jpg', 'The cat is', 'between', 'the two boxes'],
+      ['bear', '01_on.jpg', 'The teddy bear is', 'on', 'the chair'],
+      ['bear', '02_under.jpg', 'The teddy bear is', 'under', 'the chair'],
+      ['bear', '03_beside.jpg', 'The teddy bear is', 'beside', 'the chair'],
+      ['bear', '04_behind.jpg', 'The teddy bear is', 'behind', 'the chair'],
+      ['bear', '05_in_front_of.jpg', 'The teddy bear is', 'in front of', 'the chair'],
+      ['bear', '06_between.jpg', 'The teddy bear is', 'between', 'the two chairs']
+    ];
+
+    const alternatives = {
+      'in': ['on', 'under'],
+      'on': ['under', 'beside'],
+      'under': ['on', 'behind'],
+      'beside': ['on', 'under'],
+      'behind': ['in front of', 'under'],
+      'in front of': ['behind', 'under'],
+      'between': ['behind', 'in front of']
+    };
+
+    const equivalentPrepositions = {
+      'in': ['inside', 'inside of'],
+      'on': ['on top of'],
+      'under': ['underneath', 'beneath', 'below'],
+      'beside': ['next to', 'by', 'at the side of']
+    };
+
+    const names = document.querySelectorAll('[id]');
+    const ui = Object.fromEntries(Array.from(names, element => [element.id, element]));
+    const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+    let mode;
+    let round = [];
+    let step = 0;
+    let solved = false;
+    let pictureReady = false;
+    let model = '';
+
+    function shuffle(items) {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+
+    function speak(text) {
+      if (!canSpeak) return;
+      window.speechSynthesis.cancel();
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = 'en-CA';
+      speech.rate = 0.85;
+      window.speechSynthesis.speak(speech);
+    }
+
+    function show(section) {
+      ui.setup.hidden = section !== ui.setup;
+      ui.practice.hidden = section !== ui.practice;
+      ui.finished.hidden = section !== ui.finished;
+      if (canSpeak) window.speechSynthesis.cancel();
+    }
+
+    function start(activity) {
+      mode = activity;
+      const byPreposition = Object.keys(alternatives).map(preposition =>
+        shuffle(scenes.filter(scene => scene[3] === preposition))[0]
+      );
+      round = shuffle(byPreposition);
+      step = 0;
+      show(ui.practice);
+      render();
+    }
+
+    function setPictureReady(ready) {
+      pictureReady = ready;
+      ui.check.disabled = !ready || solved;
+      for (const button of ui.choices.children) button.disabled = !ready || solved;
+    }
+
+    function setBank(open) {
+      ui['word-bank'].hidden = !open;
+      ui['bank-toggle'].setAttribute('aria-expanded', String(open));
+      ui['bank-toggle'].textContent = open ? 'Hide word bank' : 'Show word bank';
+    }
+
+    function render() {
+      const [group, file, subject, preposition, reference] = round[step];
+      const [folder, description] = groups[group];
+      solved = false;
+      model = subject + ' ' + preposition + ' ' + reference + '.';
+      ui.feedback.textContent = '';
+      ui.feedback.className = 'feedback';
+      ui['image-error'].hidden = true;
+      ui['hear-sentence'].hidden = true;
+      ui.next.hidden = true;
+      ui.next.textContent = step + 1 === round.length ? 'Finish' : 'Next picture';
+      ui.progress.textContent = 'Picture ' + (step + 1) + ' of ' + round.length;
+      ui.choices.replaceChildren();
+      ui.choices.hidden = mode !== 'choose';
+      ui.writing.hidden = mode !== 'write';
+      ui.answer.value = '';
+      ui.answer.readOnly = false;
+      ui['bank-toggle'].hidden = false;
+      setBank(false);
+      if (mode === 'choose') {
+        const blank = document.createElement('span');
+        blank.className = 'blank';
+        blank.setAttribute('aria-label', 'blank');
+        ui.prompt.replaceChildren(subject + ' ', blank, ' ' + reference + '.');
+        for (const choice of shuffle([preposition, ...alternatives[preposition]])) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = choice;
+          button.onclick = () => {
+            if (choice === preposition) complete(model);
+            else feedback('Look at the picture and try another preposition.', false);
+          };
+          ui.choices.append(button);
+        }
+      } else {
+        ui.prompt.textContent = 'Where ' + subject.split(' ').at(-1) + ' ' +
+          subject.split(' ').slice(0, -1).join(' ').toLowerCase() + '?';
+        ui['word-bank'].replaceChildren();
+        for (const word of shuffle([preposition, ...alternatives[preposition]])) {
+          const item = document.createElement('span');
+          item.textContent = word;
+          ui['word-bank'].append(item);
+        }
+      }
+      ui['hear-prompt'].hidden = !canSpeak;
+      ui['hear-prompt'].onclick = () => speak(mode === 'choose'
+        ? subject + ' blank ' + reference + '.'
+        : ui.prompt.textContent);
+      setPictureReady(false);
+      ui.picture.alt = 'Location practice picture with ' + description;
+      ui.picture.src = 'images/' + folder + '/' + file;
+      if (ui.picture.complete && ui.picture.naturalWidth) setPictureReady(true);
+      ui.prompt.focus();
+    }
+
+    function feedback(text, correct) {
+      ui.feedback.className = 'feedback ' + (correct ? 'good' : 'retry');
+      ui.feedback.textContent = text;
+    }
+
+    function complete(sentence) {
+      solved = true;
+      setPictureReady(pictureReady);
+      ui.answer.readOnly = true;
+      ui['bank-toggle'].hidden = true;
+      setBank(false);
+      feedback('Correct! ' + sentence, true);
+      model = sentence;
+      ui['hear-sentence'].hidden = !canSpeak;
+      ui.next.hidden = false;
+      ui.next.focus();
+    }
+
+    function normalize(sentence) {
+      return sentence.toLowerCase().trim().replace(/[’‘]/g, "'")
+        .replace(/[.!?]+$/, '').replace(/\s+/g, ' ');
+    }
+
+    function matchesSentence(answer, subject, preposition, reference) {
+      const subjects = [subject, subject.replace(/ is$/, "'s"), subject.replace(/ are$/, "'re")];
+      if (subject === 'The children are') subjects.push('The kids are', 'The boy and the girl are', 'The girl and the boy are');
+      if (subject === 'The teddy bear is') subjects.push('The bear is', "The teddy bear's", "The bear's");
+      if (preposition === 'on') {
+        subjects.push(...({
+          'The cat is': ['The cat sits', 'The cat is sitting', "The cat's sitting"],
+          'The children are': ['The children sit', 'The children are sitting', 'The boy and the girl are sitting'],
+          'The teddy bear is': ['The teddy bear sits', 'The teddy bear is sitting', 'The bear is sitting']
+        }[subject] || []));
+      }
+      const references = [reference, reference.replace('the two ', 'the ')];
+      if (reference === 'the two children') references.push('the boy and the girl', 'the boy and girl', 'the girl and the boy');
+      return subjects.some(start => [preposition, ...(equivalentPrepositions[preposition] || [])]
+        .some(place => references.some(end => normalize(start + ' ' + place + ' ' + end) === answer)));
+    }
+
+    ui.writing.onsubmit = event => {
+      event.preventDefault();
+      if (solved || !pictureReady) return;
+      const [, , subject, preposition, reference] = round[step];
+      const answer = ui.answer.value.trim();
+      if (!answer) feedback('Write a sentence first.', false);
+      else if (matchesSentence(normalize(answer), subject, preposition, reference)) {
+        const sentence = answer[0].toUpperCase() + answer.slice(1).replace(/[.!?]+$/, '') + '.';
+        complete(sentence);
+      } else {
+        feedback('Name who or what you see and say where they are. Try again.', false);
+      }
+    };
+
+    ui.picture.onload = () => setPictureReady(true);
+    ui.picture.onerror = () => {
+      ui['image-error'].hidden = false;
+      setPictureReady(false);
+      ui.next.hidden = false;
+    };
+    ui['choose-mode'].onclick = () => start('choose');
+    ui['write-mode'].onclick = () => start('write');
+    ui['bank-toggle'].onclick = () => setBank(ui['word-bank'].hidden);
+    ui['hear-sentence'].onclick = () => speak(model);
+    ui.next.onclick = () => {
+      if (canSpeak) window.speechSynthesis.cancel();
+      step += 1;
+      if (step < round.length) render();
+      else {
+        show(ui.finished);
+        ui['finished-heading'].focus();
+      }
+    };
+    ui.again.onclick = () => start(mode);
+    ui['change-mode'].onclick = ui['finish-change'].onclick = () => {
+      show(ui.setup);
+      ui['setup-heading'].focus();
+    };
+  </script>
+</body>
+</html>
