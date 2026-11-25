@@ -15,6 +15,10 @@
     .card { background: white; border: 2px solid #e3e8f1; border-radius: 20px; padding: clamp(16px, 4vw, 28px); margin: 18px 0; box-shadow: 0 5px 14px #17203312; }
     .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .center { justify-content: center; text-align: center; }
+    fieldset { margin: 0 0 18px; padding: 0; border: 0; }
+    legend { margin-bottom: 8px; font-weight: bold; }
+    .level-option { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; }
+    .level-option input { width: 19px; height: 19px; }
     .progress { justify-content: space-between; color: #526078; }
     button { min-height: 48px; border: 2px solid #aebfe6; border-radius: 12px; padding: 8px 14px; font: inherit; font-weight: bold; color: #243c69; background: #eef3ff; cursor: pointer; }
     button.primary { color: white; background: #244d9b; border-color: #244d9b; }
@@ -40,6 +44,13 @@
 
     <section id="setup" class="card">
       <h2 id="setup-heading" tabindex="-1">Choose an activity</h2>
+      <fieldset>
+        <legend>Practice level</legend>
+        <div class="row">
+          <label class="level-option"><input name="level" type="radio" value="core" checked> Core practice</label>
+          <label class="level-option"><input name="level" type="radio" value="extended"> Extended practice</label>
+        </div>
+      </fieldset>
       <div class="row">
         <button class="primary" id="choose-mode" type="button">Choose the preposition</button>
         <button class="primary" id="write-mode" type="button">Write the sentence</button>
@@ -120,6 +131,33 @@
       ['bear', '06_between.jpg', 'The teddy bear is', 'between', 'the two chairs']
     ];
 
+    const extendedScenes = [
+      ['ball', '07_to_the_left_of.jpg', 'The ball is', 'to the left of', 'the table', 'Which side of the table is the ball on?'],
+      ['ball', '08_to_the_right_of.jpg', 'The ball is', 'to the right of', 'the table', 'Which side of the table is the ball on?'],
+      ['ball', '10_near.jpg', 'The ball is', 'near', 'the table', 'How close is the ball to the table?'],
+      ['ball', '11_far_from.jpg', 'The ball is', 'far from', 'the table', 'How close is the ball to the table?'],
+      ['ball', '15_around.jpg', 'The ball is rolling', 'around', 'the table', 'Where is the ball rolling?'],
+      ['bench', '07_left_of.jpg', 'The boy is', 'to the left of', 'the girl', 'Which side of the girl is the boy on?'],
+      ['bench', '08_right_of.jpg', 'The boy is', 'to the right of', 'the girl', 'Which side of the girl is the boy on?'],
+      ['bench', '09_across.jpg', 'The girl is lying', 'across', 'the bench', 'How is the girl lying on the bench?'],
+      ['bench', '11_near.jpg', 'The boy is', 'near', 'the girl', 'How close is the boy to the girl?'],
+      ['bench', '14_far_from.jpg', 'The boy is', 'far from', 'the girl', 'How close is the boy to the girl?'],
+      ['bench', '15_around.jpg', 'The children are walking', 'around', 'the bench', 'Where are the children walking?'],
+      ['cat', 'cat_box_08.jpg', 'The cat is', 'to the left of', 'the box', 'Which side of the box is the cat on?'],
+      ['cat', 'cat_box_09.jpg', 'The cat is', 'to the right of', 'the box', 'Which side of the box is the cat on?'],
+      ['cat', 'cat_box_10.jpg', 'The cat is', 'near', 'the box', 'How close is the cat to the box?'],
+      ['cat', 'cat_box_11.jpg', 'The cat is', 'far from', 'the box', 'How close is the cat to the box?'],
+      ['cat', 'cat_box_13.jpg', 'The cat is coming', 'out of', 'the box', 'Where is the cat coming from?'],
+      ['cat', 'cat_box_14.jpg', 'The cat is moving', 'around', 'the box', 'Where is the cat moving?'],
+      ['cat', 'cat_box_15.jpg', 'The cat is walking', 'toward', 'the box', 'Which way is the cat walking?'],
+      ['bear', '07_left_of.jpg', 'The teddy bear is', 'to the left of', 'the chair', 'Which side of the chair is the teddy bear on?'],
+      ['bear', '08_right_of.jpg', 'The teddy bear is', 'to the right of', 'the chair', 'Which side of the chair is the teddy bear on?'],
+      ['bear', '09_across.jpg', 'The teddy bear is lying', 'across', 'the chair', 'How is the teddy bear lying on the chair?'],
+      ['bear', '11_far_from.jpg', 'The teddy bear is', 'far from', 'the chair', 'How close is the teddy bear to the chair?'],
+      ['bear', '12_onto.jpg', 'The teddy bear is climbing', 'onto', 'the chair', 'Where is the teddy bear climbing?'],
+      ['bear', '15_near.jpg', 'The teddy bear is', 'near', 'the chair', 'How close is the teddy bear to the chair?']
+    ];
+
     const alternatives = {
       'in': ['on', 'under'],
       'on': ['under', 'beside'],
@@ -127,14 +165,32 @@
       'beside': ['on', 'under'],
       'behind': ['in front of', 'under'],
       'in front of': ['behind', 'under'],
-      'between': ['behind', 'in front of']
+      'between': ['behind', 'in front of'],
+      'to the left of': ['to the right of', 'under'],
+      'to the right of': ['to the left of', 'under'],
+      'near': ['far from', 'under'],
+      'far from': ['near', 'on'],
+      'across': ['under', 'beside'],
+      'around': ['away from', 'under'],
+      'onto': ['off', 'under'],
+      'out of': ['into', 'around'],
+      'toward': ['away from', 'around']
     };
 
     const equivalentPrepositions = {
       'in': ['inside', 'inside of'],
       'on': ['on top of'],
       'under': ['underneath', 'beneath', 'below'],
-      'beside': ['next to', 'by', 'at the side of']
+      'beside': ['next to', 'by', 'at the side of'],
+      'to the left of': ['left of', 'on the left of', 'on the left side of'],
+      'to the right of': ['right of', 'on the right of', 'on the right side of'],
+      'near': ['close to', 'beside', 'next to', 'right by'],
+      'far from': ['far away from', 'a long way from', 'nowhere near'],
+      'across': ['across the top of'],
+      'around': ['round'],
+      'onto': ['on to', 'up onto', 'on top of'],
+      'out of': ['from inside'],
+      'toward': ['towards', 'in the direction of', 'up to']
     };
 
     const names = document.querySelectorAll('[id]');
@@ -174,8 +230,11 @@
 
     function start(activity) {
       mode = activity;
-      const byPreposition = Object.keys(alternatives).map(preposition =>
-        shuffle(scenes.filter(scene => scene[3] === preposition))[0]
+      const level = document.querySelector('input[name="level"]:checked').value;
+      const pool = level === 'extended' ? extendedScenes : scenes;
+      const targets = new Set(pool.map(scene => scene[3]));
+      const byPreposition = Array.from(targets, preposition =>
+        shuffle(pool.filter(scene => scene[3] === preposition))[0]
       );
       round = shuffle(byPreposition);
       step = 0;
@@ -196,7 +255,7 @@
     }
 
     function render() {
-      const [group, file, subject, preposition, reference] = round[step];
+      const [group, file, subject, preposition, reference, question] = round[step];
       const [folder, description] = groups[group];
       solved = false;
       model = subject + ' ' + preposition + ' ' + reference + '.';
@@ -230,7 +289,7 @@
           ui.choices.append(button);
         }
       } else {
-        ui.prompt.textContent = 'Where ' + subject.split(' ').at(-1) + ' ' +
+        ui.prompt.textContent = question ?? 'Where ' + subject.split(' ').at(-1) + ' ' +
           subject.split(' ').slice(0, -1).join(' ').toLowerCase() + '?';
         ui['word-bank'].replaceChildren();
         for (const word of shuffle([preposition, ...alternatives[preposition]])) {
@@ -274,9 +333,24 @@
     }
 
     function matchesSentence(answer, subject, preposition, reference) {
-      const subjects = [subject, subject.replace(/ is$/, "'s"), subject.replace(/ are$/, "'re")];
-      if (subject === 'The children are') subjects.push('The kids are', 'The boy and the girl are', 'The girl and the boy are');
-      if (subject === 'The teddy bear is') subjects.push('The bear is', "The teddy bear's", "The bear's");
+      const subjects = [subject];
+      if (subject.startsWith('The children are')) {
+        for (const children of ['The kids', 'The boy and the girl', 'The girl and the boy']) {
+          subjects.push(subject.replace('The children', children));
+        }
+      }
+      if (subject.startsWith('The teddy bear is')) subjects.push(subject.replace('teddy bear', 'bear'));
+      const movementSubjects = {
+        'The ball is rolling': ['The ball rolls', 'The ball is moving'],
+        'The children are walking': ['The children walk', 'The boy and the girl are walking'],
+        'The cat is coming': ['The cat comes', 'The cat is walking', 'The cat walks', 'The cat is stepping'],
+        'The cat is moving': ['The cat moves', 'The cat is walking', 'The cat walks'],
+        'The cat is walking': ['The cat walks', 'The cat is moving', 'The cat is going'],
+        'The teddy bear is climbing': ['The teddy bear climbs', 'The bear climbs', 'The teddy bear is getting', 'The bear is getting'],
+        'The girl is lying': ['The girl lies'],
+        'The teddy bear is lying': ['The teddy bear lies', 'The bear lies']
+      };
+      subjects.push(...(movementSubjects[subject] || []));
       if (preposition === 'on') {
         subjects.push(...({
           'The cat is': ['The cat sits', 'The cat is sitting', "The cat's sitting"],
@@ -286,7 +360,8 @@
       }
       const references = [reference, reference.replace('the two ', 'the ')];
       if (reference === 'the two children') references.push('the boy and the girl', 'the boy and girl', 'the girl and the boy');
-      return subjects.some(start => [preposition, ...(equivalentPrepositions[preposition] || [])]
+      const contractions = subjects.map(start => start.replace(/ is\b/, "'s").replace(/ are\b/, "'re"));
+      return [...subjects, ...contractions].some(start => [preposition, ...(equivalentPrepositions[preposition] || [])]
         .some(place => references.some(end => normalize(start + ' ' + place + ' ' + end) === answer)));
     }
 
