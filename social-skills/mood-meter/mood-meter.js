@@ -150,6 +150,21 @@ const result = byId("result");
 const next = byId("next");
 let practice = false;
 let person = 0;
+let pictureQueue = [];
+function nextPicture() {
+  if (!pictureQueue.length) {
+    pictureQueue = situations.map((_, index) => index);
+    for (let i = pictureQueue.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pictureQueue[i], pictureQueue[j]] = [pictureQueue[j], pictureQueue[i]];
+    }
+    if (pictureQueue.length > 1 && pictureQueue[0] === person) {
+      const j = 1 + Math.floor(Math.random() * (pictureQueue.length - 1));
+      [pictureQueue[0], pictureQueue[j]] = [pictureQueue[j], pictureQueue[0]];
+    }
+  }
+  person = pictureQueue.shift();
+}
 let selected = "";
 let lastFocused = null;
 function closeSuccess() {
@@ -277,6 +292,11 @@ function startRound() {
 function setMode(showPractice) {
   if (practice === showPractice) return;
   practice = showPractice;
+  if (practice) {
+    pictureQueue = [];
+    person = -1;
+    nextPicture();
+  }
   byId("self").setAttribute("aria-pressed", String(!practice));
   byId("other").setAttribute("aria-pressed", String(practice));
   byId("practice").hidden = !practice;
@@ -289,7 +309,7 @@ byId("self").addEventListener("click", () => setMode(false));
 byId("other").addEventListener("click", () => setMode(true));
 byId("reset").addEventListener("click", startRound);
 next.addEventListener("click", () => {
-  person = (person + 1) % situations.length;
+  nextPicture();
   startRound();
   byId("hear-scenario").focus();
 });
