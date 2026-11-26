@@ -40,6 +40,7 @@
     .word-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
     .word-bank span { background: #eef3ff; border-radius: 8px; padding: 6px 10px; }
     .feedback { min-height: 1.4em; text-align: center; font-weight: bold; margin: 12px 0; }
+    .good { color: #12713a; }
     .retry { color: #9b2929; }
     [hidden] { display: none !important; }
   </style>
@@ -77,6 +78,7 @@
       </h2>
       <form id="response-form">
         <div id="choices" class="row center" role="group" aria-label="Preposition choices"></div>
+        <p id="choice-feedback" class="feedback" role="status" hidden></p>
         <div id="writing" hidden>
           <label for="answer">Write a complete sentence.</label>
           <textarea id="answer" rows="2" spellcheck="true"></textarea>
@@ -273,7 +275,10 @@
     }
 
     function updateNext() {
-      ui.next.disabled = !pictureFailed && (!pictureReady || !response().trim());
+      const readyToAdvance = mode === 'choose'
+        ? selectedChoice === round[step][3]
+        : ui.answer.value.trim() !== '';
+      ui.next.disabled = !pictureFailed && (!pictureReady || !readyToAdvance);
     }
 
     function setPictureReady(ready) {
@@ -312,6 +317,10 @@
       ui.progress.textContent = 'Picture ' + (step + 1) + ' of ' + round.length;
       ui.choices.replaceChildren();
       ui.choices.hidden = mode !== 'choose';
+      const choiceFeedback = ui['choice-feedback'];
+      choiceFeedback.hidden = mode !== 'choose';
+      choiceFeedback.className = 'feedback';
+      choiceFeedback.textContent = '';
       ui.writing.hidden = mode !== 'write';
       ui.answer.value = '';
       ui['bank-toggle'].hidden = mode !== 'write';
@@ -331,6 +340,11 @@
             for (const option of ui.choices.children) {
               option.setAttribute('aria-pressed', String(option === button));
             }
+            const correct = choice === preposition;
+            choiceFeedback.className = 'feedback ' + (correct ? 'good' : 'retry');
+            choiceFeedback.textContent = correct
+              ? 'Correct! ' + subject + ' ' + preposition + ' ' + reference + '.'
+              : 'Look at the picture and try another preposition.';
             updateNext();
           };
           ui.choices.append(button);
