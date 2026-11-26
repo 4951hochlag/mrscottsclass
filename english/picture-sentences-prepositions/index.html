@@ -24,7 +24,8 @@
     button.primary { color: white; background: #244d9b; border-color: #244d9b; }
     button:disabled { cursor: default; }
     :focus-visible { outline: 3px solid #3559a8; outline-offset: 3px; }
-    img { display: block; margin: 12px auto; width: 100%; height: min(35vh, 280px); object-fit: contain; }
+    .picture-frame { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; height: min(35vh, 280px); margin: 12px auto; }
+    #picture { display: block; width: min(100%, calc(var(--picture-ratio, 1) * min(35vh, 280px))); height: auto; clip-path: var(--picture-clip, none); }
     .prompt { margin: 14px 0; font-size: clamp(1.2rem, 4vw, 1.65rem); font-weight: bold; }
     .blank { display: inline-block; min-width: 6ch; border-bottom: 2px solid currentColor; }
     label { display: block; font-weight: bold; margin: 12px 0 8px; }
@@ -62,7 +63,7 @@
         <strong id="progress"></strong>
         <button id="change-mode" type="button">Change activity</button>
       </div>
-      <img id="picture" alt="">
+      <div class="picture-frame"><img id="picture" alt=""></div>
       <p id="image-error" class="feedback retry" role="status" hidden>This picture could not load.</p>
       <h2 id="question" class="row center prompt">
         <span id="prompt" tabindex="-1"></span>
@@ -157,6 +158,35 @@
       ['bear', '12_onto.jpg', 'The teddy bear is climbing', 'onto', 'the chair', 'Where is the teddy bear climbing?'],
       ['bear', '15_near.jpg', 'The teddy bear is', 'near', 'the chair', 'How close is the teddy bear to the chair?']
     ];
+
+    // Insets in source pixels, clockwise from the top edge.
+    const pictureInsets = {
+      ball: {
+        1: [5, 0, 0, 7], 2: [5, 0, 0, 6], 3: [5, 0, 0, 5],
+        4: [5, 4, 0, 0], 5: [5, 5, 0, 0], 6: [0, 0, 13, 6],
+        7: [0, 0, 13, 6], 8: [0, 0, 13, 5], 10: [0, 5, 13, 0],
+        11: [0, 0, 10, 6], 15: [0, 5, 10, 0]
+      },
+      bench: {
+        1: [3, 0, 0, 0], 2: [3, 3, 0, 0], 3: [3, 4, 0, 0],
+        4: [3, 6, 0, 0], 5: [3, 4, 0, 0], 6: [3, 0, 0, 0],
+        7: [3, 3, 0, 0], 8: [3, 4, 0, 0], 9: [3, 6, 0, 0],
+        11: [3, 0, 0, 0], 14: [3, 6, 0, 0], 15: [3, 3, 0, 0]
+      },
+      cat: {
+        1: [18, 5, 10, 13], 2: [18, 8, 10, 12], 3: [18, 10, 10, 10],
+        4: [18, 11, 10, 7], 5: [18, 13, 10, 5], 6: [10, 5, 23, 13],
+        7: [10, 8, 23, 12], 8: [10, 10, 23, 10], 9: [10, 11, 23, 7],
+        10: [10, 13, 23, 5], 11: [0, 5, 19, 13], 13: [0, 10, 19, 10],
+        14: [0, 11, 19, 7], 15: [0, 13, 19, 5]
+      },
+      bear: {
+        1: [17, 7, 9, 13], 2: [17, 6, 9, 8], 3: [17, 7, 9, 10],
+        4: [17, 6, 9, 9], 5: [17, 12, 9, 10], 6: [9, 8, 10, 13],
+        7: [9, 6, 10, 8], 8: [9, 7, 10, 10], 9: [9, 6, 10, 9],
+        11: [11, 8, 22, 13], 12: [11, 6, 22, 8], 15: [11, 12, 22, 10]
+      }
+    };
 
     const alternatives = {
       'in': ['on', 'under'],
@@ -304,8 +334,9 @@
         : ui.prompt.textContent);
       setPictureReady(false);
       ui.picture.alt = 'Location practice picture with ' + description;
+      ui.picture.style.visibility = 'hidden';
       ui.picture.src = 'images/' + folder + '/' + file;
-      if (ui.picture.complete && ui.picture.naturalWidth) setPictureReady(true);
+      if (ui.picture.complete && ui.picture.naturalWidth) displayPicture();
       ui.prompt.focus();
     }
 
@@ -379,7 +410,18 @@
       }
     };
 
-    ui.picture.onload = () => setPictureReady(true);
+    function displayPicture() {
+      const [group, filename] = round[step];
+      const imageNumber = Number(filename.match(/\d+/)[0]);
+      const [top, right, bottom, left] = pictureInsets[group][imageNumber] ?? [0, 0, 0, 0];
+      const { naturalWidth: width, naturalHeight: height, style } = ui.picture;
+      style.setProperty('--picture-ratio', width / height);
+      style.setProperty('--picture-clip', `inset(${100 * top / height}% ${100 * right / width}% ${100 * bottom / height}% ${100 * left / width}%)`);
+      style.visibility = '';
+      setPictureReady(true);
+    }
+
+    ui.picture.onload = displayPicture;
     ui.picture.onerror = () => {
       ui['image-error'].hidden = false;
       setPictureReady(false);
