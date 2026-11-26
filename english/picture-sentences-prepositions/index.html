@@ -25,7 +25,14 @@
     button:disabled { cursor: default; }
     :focus-visible { outline: 3px solid #3559a8; outline-offset: 3px; }
     .picture-frame { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; height: min(35vh, 280px); margin: 12px auto; }
-    #picture { display: block; width: min(100%, calc(var(--picture-ratio, 1) * min(35vh, 280px))); height: auto; clip-path: var(--picture-clip, none); }
+    .scene-picture { display: block; width: min(100%, calc(var(--picture-ratio, 1) * var(--picture-height))); height: auto; clip-path: var(--picture-clip, none); }
+    #picture { --picture-height: min(35vh, 280px); }
+    button[aria-pressed="true"] { background: #244d9b; color: white; }
+    button:disabled { opacity: 0.55; }
+    .review-list { padding-left: 1.6rem; }
+    .review-list li { border-top: 1px solid #e3e8f1; padding: 18px 0; }
+    .review-picture { --picture-height: 180px; }
+    .review-answer { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
     .prompt { margin: 14px 0; font-size: clamp(1.2rem, 4vw, 1.65rem); font-weight: bold; }
     .blank { display: inline-block; min-width: 6ch; border-bottom: 2px solid currentColor; }
     label { display: block; font-weight: bold; margin: 12px 0 8px; }
@@ -33,7 +40,6 @@
     .word-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
     .word-bank span { background: #eef3ff; border-radius: 8px; padding: 6px 10px; }
     .feedback { min-height: 1.4em; text-align: center; font-weight: bold; margin: 12px 0; }
-    .good { color: #12713a; }
     .retry { color: #9b2929; }
     [hidden] { display: none !important; }
   </style>
@@ -63,36 +69,38 @@
         <strong id="progress"></strong>
         <button id="change-mode" type="button">Change activity</button>
       </div>
-      <div class="picture-frame"><img id="picture" alt=""></div>
+      <div class="picture-frame"><img id="picture" class="scene-picture" alt=""></div>
       <p id="image-error" class="feedback retry" role="status" hidden>This picture could not load.</p>
       <h2 id="question" class="row center prompt">
         <span id="prompt" tabindex="-1"></span>
         <button id="hear-prompt" type="button" aria-label="Hear the prompt">🔊</button>
       </h2>
-      <div id="choices" class="row center" aria-label="Preposition choices"></div>
-      <form id="writing" hidden>
-        <label for="answer">Write a complete sentence.</label>
-        <textarea id="answer" rows="2" spellcheck="true"></textarea>
-        <div id="word-bank" class="word-bank" hidden></div>
-        <div class="row">
-          <button id="check" class="primary" type="submit">Check sentence</button>
-          <button id="bank-toggle" type="button" aria-controls="word-bank" aria-expanded="false">Show word bank</button>
+      <form id="response-form">
+        <div id="choices" class="row center" role="group" aria-label="Preposition choices"></div>
+        <div id="writing" hidden>
+          <label for="answer">Write a complete sentence.</label>
+          <textarea id="answer" rows="2" spellcheck="true"></textarea>
+          <div id="word-bank" class="word-bank" hidden></div>
+        </div>
+        <div class="row center" style="margin-top: 16px">
+          <button id="bank-toggle" type="button" aria-controls="word-bank" aria-expanded="false" hidden>Show word bank</button>
+          <button id="next" class="primary" type="submit" disabled>Next picture</button>
         </div>
       </form>
-      <p id="feedback" class="feedback" role="status"></p>
-      <div class="row center">
-        <button id="hear-sentence" type="button" hidden>🔊 Hear the sentence</button>
-        <button id="next" class="primary" type="button" hidden>Next picture</button>
-      </div>
     </section>
 
     <section id="finished" class="card" hidden>
       <h2 id="finished-heading" tabindex="-1">Round complete</h2>
-      <p>You reached the end of this round.</p>
       <div class="row">
-        <button id="again" class="primary" type="button">Practise again</button>
+        <button id="show-work" class="primary" type="button">Show my work</button>
+        <button id="again" type="button">Practise again</button>
         <button id="finish-change" type="button">Change activity</button>
       </div>
+    </section>
+    <section id="review" class="card" hidden>
+      <h2 id="review-heading" tabindex="-1">My work</h2>
+      <ol id="review-list" class="review-list"></ol>
+      <button id="back-to-finish" type="button">Back to round complete</button>
     </section>
   </main>
   <script>
@@ -207,31 +215,16 @@
       'toward': ['away from', 'around']
     };
 
-    const equivalentPrepositions = {
-      'in': ['inside', 'inside of'],
-      'on': ['on top of'],
-      'under': ['underneath', 'beneath', 'below'],
-      'beside': ['next to', 'by', 'at the side of'],
-      'to the left of': ['left of', 'on the left of', 'on the left side of'],
-      'to the right of': ['right of', 'on the right of', 'on the right side of'],
-      'near': ['close to', 'beside', 'next to', 'right by'],
-      'far from': ['far away from', 'a long way from', 'nowhere near'],
-      'across': ['across the top of'],
-      'around': ['round'],
-      'onto': ['on to', 'up onto', 'on top of'],
-      'out of': ['from inside'],
-      'toward': ['towards', 'in the direction of', 'up to']
-    };
-
     const names = document.querySelectorAll('[id]');
     const ui = Object.fromEntries(Array.from(names, element => [element.id, element]));
     const canSpeak = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
     let mode;
     let round = [];
     let step = 0;
-    let solved = false;
+    let answers = [];
+    let selectedChoice = '';
     let pictureReady = false;
-    let model = '';
+    let pictureFailed = false;
 
     function shuffle(items) {
       const result = [...items];
@@ -255,6 +248,7 @@
       ui.setup.hidden = section !== ui.setup;
       ui.practice.hidden = section !== ui.practice;
       ui.finished.hidden = section !== ui.finished;
+      ui.review.hidden = section !== ui.review;
       if (canSpeak) window.speechSynthesis.cancel();
     }
 
@@ -267,15 +261,38 @@
         shuffle(pool.filter(scene => scene[3] === preposition))[0]
       );
       round = shuffle(byPreposition);
+      answers = [];
+      ui['review-list'].replaceChildren();
       step = 0;
       show(ui.practice);
       render();
     }
 
+    function response() {
+      return mode === 'choose' ? selectedChoice : ui.answer.value;
+    }
+
+    function updateNext() {
+      ui.next.disabled = !pictureFailed && (!pictureReady || !response().trim());
+    }
+
     function setPictureReady(ready) {
       pictureReady = ready;
-      ui.check.disabled = !ready || solved;
-      for (const button of ui.choices.children) button.disabled = !ready || solved;
+      ui.answer.disabled = !ready;
+      for (const button of ui.choices.children) button.disabled = !ready;
+      updateNext();
+    }
+
+    function pictureDetails(scene) {
+      const [group, filename] = scene;
+      const [folder, description] = groups[group];
+      return ['images/' + folder + '/' + filename, 'Location practice picture with ' + description];
+    }
+
+    function writingPrompt(scene) {
+      const [, , subject, , , question] = scene;
+      const words = subject.split(' ');
+      return question ?? 'Where ' + words.pop() + ' ' + words.join(' ').toLowerCase() + '?';
     }
 
     function setBank(open) {
@@ -285,23 +302,19 @@
     }
 
     function render() {
-      const [group, file, subject, preposition, reference, question] = round[step];
-      const [folder, description] = groups[group];
-      solved = false;
-      model = subject + ' ' + preposition + ' ' + reference + '.';
-      ui.feedback.textContent = '';
-      ui.feedback.className = 'feedback';
+      const scene = round[step];
+      const [, , subject, preposition, reference] = scene;
+      const [src, alt] = pictureDetails(scene);
+      selectedChoice = '';
+      pictureFailed = false;
       ui['image-error'].hidden = true;
-      ui['hear-sentence'].hidden = true;
-      ui.next.hidden = true;
       ui.next.textContent = step + 1 === round.length ? 'Finish' : 'Next picture';
       ui.progress.textContent = 'Picture ' + (step + 1) + ' of ' + round.length;
       ui.choices.replaceChildren();
       ui.choices.hidden = mode !== 'choose';
       ui.writing.hidden = mode !== 'write';
       ui.answer.value = '';
-      ui.answer.readOnly = false;
-      ui['bank-toggle'].hidden = false;
+      ui['bank-toggle'].hidden = mode !== 'write';
       setBank(false);
       if (mode === 'choose') {
         const blank = document.createElement('span');
@@ -312,15 +325,18 @@
           const button = document.createElement('button');
           button.type = 'button';
           button.textContent = choice;
+          button.setAttribute('aria-pressed', 'false');
           button.onclick = () => {
-            if (choice === preposition) complete(model);
-            else feedback('Look at the picture and try another preposition.', false);
+            selectedChoice = choice;
+            for (const option of ui.choices.children) {
+              option.setAttribute('aria-pressed', String(option === button));
+            }
+            updateNext();
           };
           ui.choices.append(button);
         }
       } else {
-        ui.prompt.textContent = question ?? 'Where ' + subject.split(' ').at(-1) + ' ' +
-          subject.split(' ').slice(0, -1).join(' ').toLowerCase() + '?';
+        ui.prompt.textContent = writingPrompt(scene);
         ui['word-bank'].replaceChildren();
         for (const word of shuffle([preposition, ...alternatives[preposition]])) {
           const item = document.createElement('span');
@@ -333,105 +349,81 @@
         ? subject + ' blank ' + reference + '.'
         : ui.prompt.textContent);
       setPictureReady(false);
-      ui.picture.alt = 'Location practice picture with ' + description;
+      ui.picture.alt = alt;
       ui.picture.style.visibility = 'hidden';
-      ui.picture.src = 'images/' + folder + '/' + file;
+      ui.picture.src = src;
       if (ui.picture.complete && ui.picture.naturalWidth) displayPicture();
       ui.prompt.focus();
     }
 
-    function feedback(text, correct) {
-      ui.feedback.className = 'feedback ' + (correct ? 'good' : 'retry');
-      ui.feedback.textContent = text;
-    }
-
-    function complete(sentence) {
-      solved = true;
-      setPictureReady(pictureReady);
-      ui.answer.readOnly = true;
-      ui['bank-toggle'].hidden = true;
-      setBank(false);
-      feedback('Correct! ' + sentence, true);
-      model = sentence;
-      ui['hear-sentence'].hidden = !canSpeak;
-      ui.next.hidden = false;
-      ui.next.focus();
-    }
-
-    function normalize(sentence) {
-      return sentence.toLowerCase().trim().replace(/[’‘]/g, "'")
-        .replace(/[.!?]+$/, '').replace(/\s+/g, ' ');
-    }
-
-    function matchesSentence(answer, subject, preposition, reference) {
-      const subjects = [subject];
-      if (subject.startsWith('The children are')) {
-        for (const children of ['The kids', 'The boy and the girl', 'The girl and the boy']) {
-          subjects.push(subject.replace('The children', children));
-        }
-      }
-      if (subject.startsWith('The teddy bear is')) subjects.push(subject.replace('teddy bear', 'bear'));
-      const movementSubjects = {
-        'The ball is rolling': ['The ball rolls', 'The ball is moving'],
-        'The children are walking': ['The children walk', 'The boy and the girl are walking'],
-        'The cat is coming': ['The cat comes', 'The cat is walking', 'The cat walks', 'The cat is stepping'],
-        'The cat is moving': ['The cat moves', 'The cat is walking', 'The cat walks'],
-        'The cat is walking': ['The cat walks', 'The cat is moving', 'The cat is going'],
-        'The teddy bear is climbing': ['The teddy bear climbs', 'The bear climbs', 'The teddy bear is getting', 'The bear is getting'],
-        'The girl is lying': ['The girl lies'],
-        'The teddy bear is lying': ['The teddy bear lies', 'The bear lies']
-      };
-      subjects.push(...(movementSubjects[subject] || []));
-      if (preposition === 'on') {
-        subjects.push(...({
-          'The cat is': ['The cat sits', 'The cat is sitting', "The cat's sitting"],
-          'The children are': ['The children sit', 'The children are sitting', 'The boy and the girl are sitting'],
-          'The teddy bear is': ['The teddy bear sits', 'The teddy bear is sitting', 'The bear is sitting']
-        }[subject] || []));
-      }
-      const references = [reference, reference.replace('the two ', 'the ')];
-      if (reference === 'the two children') references.push('the boy and the girl', 'the boy and girl', 'the girl and the boy');
-      const contractions = subjects.map(start => start.replace(/ is\b/, "'s").replace(/ are\b/, "'re"));
-      return [...subjects, ...contractions].some(start => [preposition, ...(equivalentPrepositions[preposition] || [])]
-        .some(place => references.some(end => normalize(start + ' ' + place + ' ' + end) === answer)));
-    }
-
-    ui.writing.onsubmit = event => {
-      event.preventDefault();
-      if (solved || !pictureReady) return;
-      const [, , subject, preposition, reference] = round[step];
-      const answer = ui.answer.value.trim();
-      if (!answer) feedback('Write a sentence first.', false);
-      else if (matchesSentence(normalize(answer), subject, preposition, reference)) {
-        const sentence = answer[0].toUpperCase() + answer.slice(1).replace(/[.!?]+$/, '') + '.';
-        complete(sentence);
-      } else {
-        feedback('Name who or what you see and say where they are. Try again.', false);
-      }
-    };
-
-    function displayPicture() {
-      const [group, filename] = round[step];
-      const imageNumber = Number(filename.match(/\d+/)[0]);
-      const [top, right, bottom, left] = pictureInsets[group][imageNumber] ?? [0, 0, 0, 0];
-      const { naturalWidth: width, naturalHeight: height, style } = ui.picture;
+    function stylePicture(image, scene) {
+      const [group, filename] = scene;
+      const imageNumber = Number(filename.match(/\d+/)?.[0]);
+      const [top, right, bottom, left] = pictureInsets[group]?.[imageNumber] ?? [0, 0, 0, 0];
+      const { naturalWidth: width, naturalHeight: height, style } = image;
       style.setProperty('--picture-ratio', width / height);
       style.setProperty('--picture-clip', `inset(${100 * top / height}% ${100 * right / width}% ${100 * bottom / height}% ${100 * left / width}%)`);
-      style.visibility = '';
+    }
+
+    function displayPicture() {
+      stylePicture(ui.picture, round[step]);
+      ui.picture.style.visibility = '';
       setPictureReady(true);
+    }
+
+    function showWork() {
+      ui['review-list'].replaceChildren();
+      for (const [index, scene] of round.entries()) {
+        const [, , subject, , reference] = scene;
+        const [src, alt] = pictureDetails(scene);
+        const answer = answers[index];
+        const item = document.createElement('li');
+        const picture = document.createElement('img');
+        picture.className = 'scene-picture review-picture';
+        picture.alt = alt;
+        picture.onload = () => stylePicture(picture, scene);
+        picture.onerror = () => {
+          const missing = document.createElement('p');
+          missing.textContent = 'This picture could not load.';
+          picture.replaceWith(missing);
+        };
+        picture.src = src;
+        const prompt = document.createElement('p');
+        prompt.textContent = mode === 'choose' ? subject + ' ___ ' + reference + '.' : writingPrompt(scene);
+        const result = document.createElement('p');
+        result.className = 'review-answer';
+        const label = document.createElement('strong');
+        label.textContent = 'Your answer: ';
+        result.append(label, answer ?? 'No answer recorded.');
+        item.append(picture, prompt, result);
+        if (canSpeak && answer !== null) {
+          const hear = document.createElement('button');
+          hear.type = 'button';
+          hear.textContent = 'Hear your answer';
+          hear.onclick = () => speak(mode === 'choose' ? subject + ' ' + answer + ' ' + reference + '.' : answer);
+          item.append(hear);
+        }
+        ui['review-list'].append(item);
+      }
+      show(ui.review);
+      ui['review-heading'].focus();
     }
 
     ui.picture.onload = displayPicture;
     ui.picture.onerror = () => {
       ui['image-error'].hidden = false;
+      pictureFailed = true;
+      ui.next.textContent = step + 1 === round.length ? 'Finish' : 'Skip picture';
       setPictureReady(false);
-      ui.next.hidden = false;
     };
     ui['choose-mode'].onclick = () => start('choose');
     ui['write-mode'].onclick = () => start('write');
     ui['bank-toggle'].onclick = () => setBank(ui['word-bank'].hidden);
-    ui['hear-sentence'].onclick = () => speak(model);
-    ui.next.onclick = () => {
+    ui.answer.oninput = updateNext;
+    ui['response-form'].onsubmit = event => {
+      event.preventDefault();
+      if (ui.next.disabled) return;
+      answers.push(pictureFailed ? null : response());
       if (canSpeak) window.speechSynthesis.cancel();
       step += 1;
       if (step < round.length) render();
@@ -439,6 +431,11 @@
         show(ui.finished);
         ui['finished-heading'].focus();
       }
+    };
+    ui['show-work'].onclick = showWork;
+    ui['back-to-finish'].onclick = () => {
+      show(ui.finished);
+      ui['show-work'].focus();
     };
     ui.again.onclick = () => start(mode);
     ui['change-mode'].onclick = ui['finish-change'].onclick = () => {
